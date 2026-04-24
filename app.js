@@ -107,11 +107,9 @@ function hydrateFilters() {
   });
   fillSelect(elements.anoFilter, "Todos", years);
 
-  if (sourceData.generatedAt) {
-    const generated = new Date(sourceData.generatedAt);
-    elements.updatedLabel.textContent = `Base: ${numberFormat.format(records.length)} contratos`;
-    elements.updatedLabel.title = `Dados gerados em ${generated.toLocaleString("pt-BR")}`;
-  }
+  const dataUpdatedAt = sourceData.updatedAt || sourceData.generatedAt;
+  elements.updatedLabel.textContent = `Atualizado: ${formatUpdatedAt(dataUpdatedAt)} · ${numberFormat.format(records.length)} contratos`;
+  elements.updatedLabel.title = `Última atualização dos dados: ${formatUpdatedAt(dataUpdatedAt, true)}`;
 }
 
 function bindEvents() {
@@ -520,6 +518,20 @@ function getPrazoBucket(days) {
 
 function formatDate(date) {
   return date ? dateFormat.format(date) : "Sem data";
+}
+
+function formatUpdatedAt(value, withSeconds = false) {
+  if (!value) return "Sem data";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Sem data";
+  return date.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: withSeconds ? "2-digit" : undefined,
+  });
 }
 
 function formatDays(days) {
