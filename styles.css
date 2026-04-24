@@ -551,6 +551,11 @@ select:focus-visible {
   gap: 18px;
 }
 
+.contract-groups {
+  display: grid;
+  gap: 18px;
+}
+
 .analytics-grid .wide {
   grid-column: 1 / -1;
 }
@@ -849,16 +854,16 @@ td.muted,
   background: var(--plum);
 }
 
-#contractsTable tr {
+.contracts-table-body tr {
   animation: row-in 220ms ease both;
 }
 
 @media (min-width: 721px) {
-  #contractsTable tr {
+  .contracts-table-body tr {
     transition: background-color 160ms ease;
   }
 
-  #contractsTable tr:hover {
+  .contracts-table-body tr:hover {
     background: #fbfcf8;
   }
 }

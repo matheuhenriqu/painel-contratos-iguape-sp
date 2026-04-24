@@ -150,7 +150,7 @@
         <section class="panel table-panel">
           <div class="table-toolbar">
             <div class="table-title">
-              <h2>Contratos</h2>
+              <h2>Contratos vigentes</h2>
               <p id="tableCount" aria-live="polite"></p>
             </div>
             <div class="table-controls" aria-label="Ordenação da tabela">
@@ -190,10 +190,66 @@
                   <th><button type="button" data-sort="fiscal">Fiscal</button></th>
                 </tr>
               </thead>
-              <tbody id="contractsTable"></tbody>
+              <tbody id="contractsTable" class="contracts-table-body"></tbody>
             </table>
           </div>
           <div id="tablePager" class="table-pager" aria-live="polite"></div>
+        </section>
+
+        <section class="contract-groups" aria-label="Contratos por situação">
+          <article class="panel table-panel grouped-table-panel">
+            <div class="table-toolbar">
+              <div class="table-title">
+                <h2>Contratos vencidos</h2>
+                <p id="expiredTableCount" aria-live="polite"></p>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Objeto</th>
+                    <th>Empresa</th>
+                    <th>Modalidade</th>
+                    <th>Valor</th>
+                    <th>Vencimento</th>
+                    <th>Status</th>
+                    <th>Gestor</th>
+                    <th>Fiscal</th>
+                  </tr>
+                </thead>
+                <tbody id="expiredContractsTable" class="contracts-table-body"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel table-panel grouped-table-panel">
+            <div class="table-toolbar">
+              <div class="table-title">
+                <h2>Contratos concluídos</h2>
+                <p id="completedTableCount" aria-live="polite"></p>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Objeto</th>
+                    <th>Empresa</th>
+                    <th>Modalidade</th>
+                    <th>Valor</th>
+                    <th>Vencimento</th>
+                    <th>Status</th>
+                    <th>Gestor</th>
+                    <th>Fiscal</th>
+                  </tr>
+                </thead>
+                <tbody id="completedContractsTable" class="contracts-table-body"></tbody>
+              </table>
+            </div>
+          </article>
         </section>
       </section>
     </main>

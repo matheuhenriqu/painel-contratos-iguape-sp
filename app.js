@@ -23,7 +23,7 @@ const state = {
 
 const charts = {};
 let userToggledFilters = false;
-const closedStatuses = new Set(["encerrado", "finalizado", "fracassado", "nao assinou", "suspenso"]);
+const closedStatuses = new Set(["concluido", "encerrado", "finalizado", "fracassado", "nao assinou", "suspenso"]);
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -53,6 +53,10 @@ const elements = {
   table: document.querySelector("#contractsTable"),
   tableCount: document.querySelector("#tableCount"),
   tablePager: document.querySelector("#tablePager"),
+  expiredTable: document.querySelector("#expiredContractsTable"),
+  expiredTableCount: document.querySelector("#expiredTableCount"),
+  completedTable: document.querySelector("#completedContractsTable"),
+  completedTableCount: document.querySelector("#completedTableCount"),
   activeFilters: document.querySelector("#activeFilters"),
   sortField: document.querySelector("#sortField"),
   sortDirBtn: document.querySelector("#sortDirBtn"),
@@ -228,13 +232,17 @@ function bindEvents() {
 
 function render() {
   const filtered = getFilteredRows();
-  const sorted = sortRows(filtered);
+  const currentRows = sortRows(filtered.filter(isCurrentContract));
+  const expiredRows = sortRows(filtered.filter(isExpiredContract));
+  const completedRows = sortRows(filtered.filter(isCompletedContract));
   renderKpis(filtered);
   renderInsights(filtered);
   renderCharts(filtered);
   renderQuickFilterIndicators();
   renderActiveFilters();
-  renderTable(sorted);
+  renderTable(currentRows);
+  renderSectionTable(elements.expiredTable, elements.expiredTableCount, expiredRows, "vencido(s)", "Nenhum contrato vencido no recorte atual.");
+  renderSectionTable(elements.completedTable, elements.completedTableCount, completedRows, "concluído(s)", "Nenhum contrato concluído no recorte atual.");
   renderSortIndicators();
   if (window.lucide) {
     window.lucide.createIcons();
@@ -434,7 +442,7 @@ function matchesPrazoFilter(item) {
 function renderTable(rows) {
   const visibleRows = rows.slice(0, state.visibleLimit);
   const shown = visibleRows.length;
-  elements.tableCount.textContent = formatTableCount(shown, rows.length);
+  elements.tableCount.textContent = formatTableCount(shown, rows.length, "vigentes");
 
   if (!rows.length) {
     elements.table.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhum contrato encontrado.</td></tr>`;
@@ -442,7 +450,23 @@ function renderTable(rows) {
     return;
   }
 
-  elements.table.innerHTML = visibleRows.map((item) => `
+  elements.table.innerHTML = renderRows(visibleRows);
+  renderTablePager(rows.length, shown);
+}
+
+function renderSectionTable(table, countElement, rows, label, emptyMessage) {
+  countElement.textContent = `${numberFormat.format(rows.length)} contrato(s) ${label} no recorte atual`;
+
+  if (!rows.length) {
+    table.innerHTML = `<tr><td colspan="9" class="empty-state">${emptyMessage}</td></tr>`;
+    return;
+  }
+
+  table.innerHTML = renderRows(rows);
+}
+
+function renderRows(rows) {
+  return rows.map((item) => `
     <tr>
       <td data-label="ID">${escapeHtml(item.id ?? "")}</td>
       <td class="object-cell" data-label="Objeto">
@@ -461,7 +485,6 @@ function renderTable(rows) {
       <td data-label="Fiscal" class="${item.fiscal ? "" : "muted"}">${escapeHtml(item.fiscal || "Sem fiscal")}</td>
     </tr>
   `).join("");
-  renderTablePager(rows.length, shown);
 }
 
 function configureFilterPanel() {
@@ -521,6 +544,18 @@ function renderSortIndicators() {
   syncSortControls();
 }
 
+function isCurrentContract(item) {
+  return !item.isClosed && (item.diasAtual === null || item.diasAtual >= 0);
+}
+
+function isExpiredContract(item) {
+  return !item.isClosed && item.diasAtual !== null && item.diasAtual < 0;
+}
+
+function isCompletedContract(item) {
+  return item.isClosed;
+}
+
 function clearSingleFilter(key) {
   if (key === "search") {
     state.search = "";
@@ -540,12 +575,12 @@ function syncSortControls() {
   elements.sortDirBtn.classList.toggle("is-desc", state.sortDir === "desc");
 }
 
-function formatTableCount(shown, filteredTotal) {
+function formatTableCount(shown, filteredTotal, label = "contratos") {
   const shownText = numberFormat.format(shown);
   const filteredText = numberFormat.format(filteredTotal);
   const totalText = numberFormat.format(records.length);
-  if (filteredTotal === records.length) return `Mostrando ${shownText} de ${totalText} contratos`;
-  return `Mostrando ${shownText} de ${filteredText} contratos filtrados · ${totalText} na base`;
+  if (filteredTotal === records.length) return `Mostrando ${shownText} de ${totalText} ${label}`;
+  return `Mostrando ${shownText} de ${filteredText} ${label} · ${totalText} contratos na base`;
 }
 
 function renderTablePager(total, shown) {
