@@ -21,14 +21,19 @@
   <body>
     <header class="topbar">
       <div class="brand">
-        <img class="brand-logo" src="assets/apple-touch-icon.png" alt="Brasão da Prefeitura de Iguape" decoding="async">
+        <span class="brand-logo-frame">
+          <img class="brand-logo" src="assets/apple-touch-icon.png" alt="Brasão da Prefeitura de Iguape" decoding="async">
+        </span>
         <div class="brand-copy">
           <span>Prefeitura Municipal de Iguape</span>
           <h1>Painel de Gestão de Contratos</h1>
         </div>
       </div>
       <div class="topbar-actions">
-        <span id="updatedLabel" class="updated-label"></span>
+        <span class="updated-label">
+          <i data-lucide="database"></i>
+          <span id="updatedLabel"></span>
+        </span>
       </div>
     </header>
 
@@ -110,8 +115,24 @@
       </aside>
 
       <section class="workspace">
+        <div class="section-heading">
+          <div>
+            <span>Transparência pública</span>
+            <h2>Visão geral dos contratos</h2>
+          </div>
+          <p>Dados consolidados para consulta, acompanhamento de prazos e apoio à gestão municipal.</p>
+        </div>
+
         <section id="kpiGrid" class="kpi-grid" aria-label="Indicadores"></section>
         <section id="insightGrid" class="insight-grid" aria-label="Leituras rápidas"></section>
+
+        <div class="section-heading compact">
+          <div>
+            <span>Análise visual</span>
+            <h2>Distribuição dos contratos</h2>
+          </div>
+          <p>Leitura rápida por situação cadastral e por modalidade de contratação.</p>
+        </div>
 
         <section class="analytics-grid">
           <article class="panel chart-panel">
@@ -140,6 +161,14 @@
             </div>
           </article>
         </section>
+
+        <div class="section-heading compact">
+          <div>
+            <span>Consulta detalhada</span>
+            <h2>Relação de contratos</h2>
+          </div>
+          <p>Contratos vigentes aparecem primeiro, em ordem crescente de vencimento.</p>
+        </div>
 
         <section class="panel table-panel">
           <div class="table-toolbar">
@@ -257,6 +286,15 @@
         </section>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>Prefeitura Municipal de Iguape</strong>
+        <span>Painel público estático para acompanhamento e transparência dos contratos municipais.</span>
+      </div>
+      <span>Publicado via GitHub Pages · Dados locais da planilha oficial</span>
+    </footer>
+
     <button id="backToTopBtn" class="floating-top-button" type="button" aria-label="Voltar ao topo" hidden>
       <i data-lucide="arrow-up"></i>
     </button>

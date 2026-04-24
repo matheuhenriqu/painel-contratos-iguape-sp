@@ -14,6 +14,7 @@ Dashboard estática para acompanhamento dos contratos importados de `contratos.x
 - Tabelas ordenáveis também no mobile, com carregamento progressivo mais leve no iPhone.
 - Busca com limpeza rápida, contador de filtros ativos e botão de retorno ao topo em páginas longas.
 - Logo e favicon baseados nos arquivos públicos do portal oficial da Prefeitura de Iguape.
+- Identidade visual institucional com cabeçalho, seções e rodapé voltados para transparência pública.
 - Layout responsivo para desktop, tablet e iPhone, com filtros recolhíveis e cartões de contratos no mobile.
 - Bibliotecas JavaScript servidas localmente e política CSP restritiva para uso no GitHub Pages.
 
