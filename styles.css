@@ -88,9 +88,9 @@ select:focus-visible {
 
 .brand-logo {
   display: block;
-  width: clamp(142px, 12vw, 172px);
-  height: auto;
-  max-height: 60px;
+  width: clamp(54px, 5vw, 66px);
+  height: clamp(54px, 5vw, 66px);
+  max-height: none;
   flex: 0 0 auto;
   object-fit: contain;
 }
@@ -944,8 +944,8 @@ td.muted,
   }
 
   .brand-logo {
-    width: 138px;
-    max-height: 50px;
+    width: 54px;
+    height: 54px;
   }
 
   .brand-copy span {
@@ -1215,7 +1215,8 @@ td.muted,
   }
 
   .brand-logo {
-    width: 124px;
+    width: 48px;
+    height: 48px;
   }
 
   .brand h1 {
