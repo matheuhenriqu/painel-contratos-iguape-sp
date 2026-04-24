@@ -8,7 +8,7 @@ Dashboard estática para acompanhamento dos contratos importados de `contratos.x
 - Filtros por busca, recortes rápidos, status, prazo, modalidade, gestor, fiscal e ano de vencimento, com remoção individual dos filtros ativos.
 - Leituras rápidas para próximo vencimento, maior contrato, cadastros sem responsável e valor vencido.
 - Critério claro entre vencidos por prazo aberto e contratos encerrados por status cadastral.
-- Gráficos de status, valor por modalidade e vencimentos por mês.
+- Gráficos de status e valor por modalidade.
 - Tabela principal apenas com contratos vigentes, seguida por áreas separadas para vencidos e concluídos.
 - Tabelas ordenáveis também no mobile, com carregamento progressivo para navegação mais leve no iPhone.
 - Logo e favicon baseados nos arquivos públicos do portal oficial da Prefeitura de Iguape.

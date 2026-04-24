@@ -33,8 +33,6 @@ const currency = new Intl.NumberFormat("pt-BR", {
 
 const numberFormat = new Intl.NumberFormat("pt-BR");
 const dateFormat = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
-const monthFormat = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit", timeZone: "UTC" });
-
 const elements = {
   updatedLabel: document.querySelector("#updatedLabel"),
   filters: document.querySelector(".filters"),
@@ -63,7 +61,6 @@ const elements = {
   sortDirLabel: document.querySelector("#sortDirLabel"),
   statusChartHint: document.querySelector("#statusChartHint"),
   modalidadeChartHint: document.querySelector("#modalidadeChartHint"),
-  vencimentosChartHint: document.querySelector("#vencimentosChartHint"),
 };
 
 const today = startOfDay(new Date());
@@ -364,20 +361,6 @@ function renderCharts(rows) {
       datasets: [{ label: "Valor", data: modalidadeData.map((item) => item.value), backgroundColor: "#24715d", borderRadius: 6 }],
     },
     options: horizontalBarOptions(true),
-  });
-
-  const vencimentosData = monthlyDeadlines(rows);
-  elements.vencimentosChartHint.textContent = `${vencimentosData.total} contratos com data de vencimento`;
-  upsertChart("vencimentosChart", {
-    type: "bar",
-    data: {
-      labels: vencimentosData.labels,
-      datasets: [
-        { label: "Quantidade", data: vencimentosData.counts, backgroundColor: "#16837a", borderRadius: 6, yAxisID: "y" },
-        { label: "Valor", data: vencimentosData.values, backgroundColor: "#bd7619", borderRadius: 6, yAxisID: "y1" },
-      ],
-    },
-    options: deadlineOptions(),
   });
 }
 
@@ -714,25 +697,6 @@ function sumBy(rows, labelAccessor, valueAccessor) {
     .sort((a, b) => b.value - a.value);
 }
 
-function monthlyDeadlines(rows) {
-  const map = new Map();
-  rows.forEach((item) => {
-    if (!item.dataVencimentoDate) return;
-    const key = `${item.dataVencimentoDate.getUTCFullYear()}-${String(item.dataVencimentoDate.getUTCMonth() + 1).padStart(2, "0")}`;
-    const existing = map.get(key) || { date: item.dataVencimentoDate, count: 0, value: 0 };
-    existing.count += 1;
-    existing.value += Number(item.valor || 0);
-    map.set(key, existing);
-  });
-  const entries = [...map.values()].sort((a, b) => a.date - b.date).slice(0, 18);
-  return {
-    labels: entries.map((item) => monthFormat.format(item.date)),
-    counts: entries.map((item) => item.count),
-    values: entries.map((item) => item.value),
-    total: rows.filter((item) => item.dataVencimentoDate).length,
-  };
-}
-
 function compactCurrency(value) {
   const abs = Math.abs(value);
   if (abs >= 1_000_000) {
@@ -816,39 +780,6 @@ function horizontalBarOptions(currencyAxis = false) {
         ticks: {
           callback(value) {
             return shortLabel(this.getLabelForValue(value), small ? 18 : 28);
-          },
-        },
-        grid: { display: false },
-      },
-    },
-  };
-}
-
-function deadlineOptions() {
-  const small = isSmallViewport();
-  return {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: commonPlugins(),
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: { precision: 0 },
-        grid: { color: "#edf1ed" },
-      },
-      y1: {
-        display: !small,
-        beginAtZero: true,
-        position: "right",
-        ticks: { callback: (value) => compactCurrency(Number(value)) },
-        grid: { drawOnChartArea: false },
-      },
-      x: {
-        ticks: {
-          maxRotation: small ? 0 : 45,
-          callback(value, index) {
-            if (small && index % 2) return "";
-            return this.getLabelForValue(value);
           },
         },
         grid: { display: false },

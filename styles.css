@@ -556,10 +556,6 @@ select:focus-visible {
   gap: 18px;
 }
 
-.analytics-grid .wide {
-  grid-column: 1 / -1;
-}
-
 .panel {
   min-width: 0;
   padding: clamp(16px, 1.4vw, 20px);
@@ -591,10 +587,6 @@ select:focus-visible {
 .chart-frame {
   position: relative;
   min-height: 300px;
-}
-
-.wide .chart-frame {
-  min-height: 340px;
 }
 
 .status-badge,
@@ -1031,8 +1023,7 @@ td.muted,
     height: 38px;
   }
 
-  .chart-frame,
-  .wide .chart-frame {
+  .chart-frame {
     min-height: 280px;
   }
 
@@ -1204,8 +1195,7 @@ td.muted,
     font-size: 1.55rem;
   }
 
-  .chart-frame,
-  .wide .chart-frame {
+  .chart-frame {
     min-height: 255px;
   }
 
