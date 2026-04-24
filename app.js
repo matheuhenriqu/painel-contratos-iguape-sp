@@ -51,6 +51,7 @@ const elements = {
   updatedLabel: queryRequired("#updatedLabel"),
   filters: queryRequired(".filters"),
   toggleFiltersBtn: queryRequired("#toggleFiltersBtn"),
+  filterToggleLabel: queryRequired("#filterToggleLabel"),
   quickFilterButtons: queryAll("[data-quick-filter]"),
   filterCountBadge: queryRequired("#filterCountBadge"),
   kpiGrid: queryRequired("#kpiGrid"),
@@ -140,6 +141,10 @@ function hydrateFilters() {
 
 function bindEvents() {
   elements.toggleFiltersBtn.addEventListener("click", () => {
+    if (!isFilterViewport()) {
+      setFiltersCollapsed(false);
+      return;
+    }
     userToggledFilters = true;
     setFiltersCollapsed(!elements.filters.classList.contains("is-collapsed"));
   });
@@ -553,12 +558,17 @@ function renderRows(rows) {
 }
 
 function configureFilterPanel() {
-  setFiltersCollapsed(isSmallViewport());
+  setFiltersCollapsed(isFilterViewport());
 }
 
 function setFiltersCollapsed(collapsed) {
-  elements.filters.classList.toggle("is-collapsed", collapsed);
-  elements.toggleFiltersBtn.setAttribute("aria-expanded", String(!collapsed));
+  const shouldCollapse = isFilterViewport() && collapsed;
+  const label = shouldCollapse ? "Mostrar filtros" : isFilterViewport() ? "Ocultar filtros" : "Filtros";
+
+  elements.filters.classList.toggle("is-collapsed", shouldCollapse);
+  elements.toggleFiltersBtn.setAttribute("aria-expanded", String(!shouldCollapse));
+  elements.toggleFiltersBtn.setAttribute("aria-label", label);
+  elements.filterToggleLabel.textContent = label;
 }
 
 function sortRows(rows) {
@@ -874,6 +884,10 @@ function compactCurrency(value) {
 
 function isSmallViewport() {
   return window.matchMedia(`(max-width: ${BREAKPOINTS.small}px)`).matches;
+}
+
+function isFilterViewport() {
+  return window.matchMedia(`(max-width: ${BREAKPOINTS.filters}px)`).matches;
 }
 
 function shortLabel(label, length = 22) {
