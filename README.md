@@ -20,3 +20,20 @@ Dashboard estática para acompanhamento dos contratos importados de `contratos.x
 ## Publicação
 
 O projeto foi criado para rodar diretamente no GitHub Pages, sem backend ou etapa de build.
+
+## Estrutura técnica
+
+- `index.html`: estrutura semântica da página, CSP e referências para assets locais.
+- `styles.css`: tokens visuais, layout responsivo e estados de interface.
+- `app.js`: preparação dos dados, filtros, ordenação, cards, gráficos e tabelas.
+- `data/contratos.js`: base local gerada a partir da planilha de contratos.
+
+## Validação local
+
+Antes de publicar alterações, valide pelo menos:
+
+```bash
+node --check app.js
+git diff --check
+python3 -m http.server 4173
+```

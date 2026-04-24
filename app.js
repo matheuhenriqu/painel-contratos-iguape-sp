@@ -1,4 +1,15 @@
-const sourceData = window.CONTRATOS_DATA || { records: [], generatedAt: null };
+const SELECT_ALL = "todos";
+const TABLE_COLUMN_COUNT = 9;
+const MS_PER_DAY = 86_400_000;
+const BREAKPOINTS = {
+  small: 720,
+  filters: 820,
+};
+const STORAGE_KEYS = {
+  compactRows: "contratosIguapeCompactRows",
+};
+
+const sourceData = normalizeSourceData(window.CONTRATOS_DATA);
 const defaultSort = {
   key: "dataVencimento",
   dir: "asc",
@@ -7,16 +18,15 @@ const pageSize = {
   desktop: 80,
   mobile: 18,
 };
-const compactStorageKey = "contratosIguapeCompactRows";
 
 const state = {
   search: "",
-  status: "todos",
-  modalidade: "todos",
-  gestor: "todos",
-  fiscal: "todos",
-  prazo: "todos",
-  ano: "todos",
+  status: SELECT_ALL,
+  modalidade: SELECT_ALL,
+  gestor: SELECT_ALL,
+  fiscal: SELECT_ALL,
+  prazo: SELECT_ALL,
+  ano: SELECT_ALL,
   sortKey: defaultSort.key,
   sortDir: defaultSort.dir,
   visibleLimit: pageSize.desktop,
@@ -38,45 +48,45 @@ const currency = new Intl.NumberFormat("pt-BR", {
 const numberFormat = new Intl.NumberFormat("pt-BR");
 const dateFormat = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 const elements = {
-  updatedLabel: document.querySelector("#updatedLabel"),
-  filters: document.querySelector(".filters"),
-  toggleFiltersBtn: document.querySelector("#toggleFiltersBtn"),
-  quickFilterButtons: [...document.querySelectorAll("[data-quick-filter]")],
-  filterCountBadge: document.querySelector("#filterCountBadge"),
-  kpiGrid: document.querySelector("#kpiGrid"),
-  insightGrid: document.querySelector("#insightGrid"),
-  statusFilter: document.querySelector("#statusFilter"),
-  modalidadeFilter: document.querySelector("#modalidadeFilter"),
-  gestorFilter: document.querySelector("#gestorFilter"),
-  fiscalFilter: document.querySelector("#fiscalFilter"),
-  prazoFilter: document.querySelector("#prazoFilter"),
-  anoFilter: document.querySelector("#anoFilter"),
-  searchInput: document.querySelector("#searchInput"),
-  clearSearchBtn: document.querySelector("#clearSearchBtn"),
-  clearFiltersBtn: document.querySelector("#clearFiltersBtn"),
-  table: document.querySelector("#contractsTable"),
-  tableCount: document.querySelector("#tableCount"),
-  tablePager: document.querySelector("#tablePager"),
-  expiredTable: document.querySelector("#expiredContractsTable"),
-  expiredTableCount: document.querySelector("#expiredTableCount"),
-  completedTable: document.querySelector("#completedContractsTable"),
-  completedTableCount: document.querySelector("#completedTableCount"),
-  activeFilters: document.querySelector("#activeFilters"),
-  sortField: document.querySelector("#sortField"),
-  sortDirBtn: document.querySelector("#sortDirBtn"),
-  sortDirLabel: document.querySelector("#sortDirLabel"),
-  densityBtn: document.querySelector("#densityBtn"),
-  sectionToggleButtons: [...document.querySelectorAll("[data-section-toggle]")],
-  backToTopBtn: document.querySelector("#backToTopBtn"),
-  statusChartHint: document.querySelector("#statusChartHint"),
-  modalidadeChartHint: document.querySelector("#modalidadeChartHint"),
+  updatedLabel: queryRequired("#updatedLabel"),
+  filters: queryRequired(".filters"),
+  toggleFiltersBtn: queryRequired("#toggleFiltersBtn"),
+  quickFilterButtons: queryAll("[data-quick-filter]"),
+  filterCountBadge: queryRequired("#filterCountBadge"),
+  kpiGrid: queryRequired("#kpiGrid"),
+  insightGrid: queryRequired("#insightGrid"),
+  statusFilter: queryRequired("#statusFilter"),
+  modalidadeFilter: queryRequired("#modalidadeFilter"),
+  gestorFilter: queryRequired("#gestorFilter"),
+  fiscalFilter: queryRequired("#fiscalFilter"),
+  prazoFilter: queryRequired("#prazoFilter"),
+  anoFilter: queryRequired("#anoFilter"),
+  searchInput: queryRequired("#searchInput"),
+  clearSearchBtn: queryRequired("#clearSearchBtn"),
+  clearFiltersBtn: queryRequired("#clearFiltersBtn"),
+  table: queryRequired("#contractsTable"),
+  tableCount: queryRequired("#tableCount"),
+  tablePager: queryRequired("#tablePager"),
+  expiredTable: queryRequired("#expiredContractsTable"),
+  expiredTableCount: queryRequired("#expiredTableCount"),
+  completedTable: queryRequired("#completedContractsTable"),
+  completedTableCount: queryRequired("#completedTableCount"),
+  activeFilters: queryRequired("#activeFilters"),
+  sortField: queryRequired("#sortField"),
+  sortDirBtn: queryRequired("#sortDirBtn"),
+  sortDirLabel: queryRequired("#sortDirLabel"),
+  densityBtn: queryRequired("#densityBtn"),
+  sectionToggleButtons: queryAll("[data-section-toggle]"),
+  backToTopBtn: queryRequired("#backToTopBtn"),
+  statusChartHint: queryRequired("#statusChartHint"),
+  modalidadeChartHint: queryRequired("#modalidadeChartHint"),
 };
 
 const today = startOfDay(new Date());
 
 const records = sourceData.records.map((record) => {
   const dataVencimento = parseDate(record.dataVencimento);
-  const diasAtual = dataVencimento ? Math.ceil((dataVencimento - today) / 86400000) : null;
+  const diasAtual = dataVencimento ? Math.ceil((dataVencimento - today) / MS_PER_DAY) : null;
   return {
     ...record,
     normalized: normalizeText([
@@ -134,7 +144,7 @@ function bindEvents() {
     setFiltersCollapsed(!elements.filters.classList.contains("is-collapsed"));
   });
 
-  window.matchMedia("(max-width: 820px)").addEventListener("change", (event) => {
+  addMediaChangeListener(window.matchMedia(`(max-width: ${BREAKPOINTS.filters}px)`), (event) => {
     if (!event.matches) {
       userToggledFilters = false;
       setFiltersCollapsed(false);
@@ -220,23 +230,23 @@ function bindEvents() {
   elements.clearFiltersBtn.addEventListener("click", () => {
     Object.assign(state, {
       search: "",
-      status: "todos",
-      modalidade: "todos",
-      gestor: "todos",
-      fiscal: "todos",
-      prazo: "todos",
-      ano: "todos",
+      status: SELECT_ALL,
+      modalidade: SELECT_ALL,
+      gestor: SELECT_ALL,
+      fiscal: SELECT_ALL,
+      prazo: SELECT_ALL,
+      ano: SELECT_ALL,
       sortKey: defaultSort.key,
       sortDir: defaultSort.dir,
     });
     resetVisibleLimit();
     elements.searchInput.value = "";
-    elements.statusFilter.value = "todos";
-    elements.modalidadeFilter.value = "todos";
-    elements.gestorFilter.value = "todos";
-    elements.fiscalFilter.value = "todos";
-    elements.prazoFilter.value = "todos";
-    elements.anoFilter.value = "todos";
+    elements.statusFilter.value = SELECT_ALL;
+    elements.modalidadeFilter.value = SELECT_ALL;
+    elements.gestorFilter.value = SELECT_ALL;
+    elements.fiscalFilter.value = SELECT_ALL;
+    elements.prazoFilter.value = SELECT_ALL;
+    elements.anoFilter.value = SELECT_ALL;
     updateSearchClearButton();
     render();
   });
@@ -251,7 +261,7 @@ function bindEvents() {
 
   window.addEventListener("scroll", scheduleBackToTopUpdate, { passive: true });
 
-  document.querySelectorAll("[data-sort]").forEach((button) => {
+  queryAll("[data-sort]").forEach((button) => {
     button.addEventListener("click", () => {
       const key = button.dataset.sort;
       if (state.sortKey === key) {
@@ -298,12 +308,12 @@ function render() {
 function getFilteredRows() {
   return records.filter((item) => {
     if (state.search && !item.normalized.includes(state.search)) return false;
-    if (state.status !== "todos" && (item.status || "Sem status") !== state.status) return false;
-    if (state.modalidade !== "todos" && (item.modalidade || "Sem modalidade") !== state.modalidade) return false;
-    if (state.gestor !== "todos" && (item.gestor || "Sem gestor") !== state.gestor) return false;
-    if (state.fiscal !== "todos" && (item.fiscal || "Sem fiscal") !== state.fiscal) return false;
-    if (state.prazo !== "todos" && !matchesPrazoFilter(item)) return false;
-    if (state.ano !== "todos" && item.anoVencimento !== state.ano) return false;
+    if (state.status !== SELECT_ALL && (item.status || "Sem status") !== state.status) return false;
+    if (state.modalidade !== SELECT_ALL && (item.modalidade || "Sem modalidade") !== state.modalidade) return false;
+    if (state.gestor !== SELECT_ALL && (item.gestor || "Sem gestor") !== state.gestor) return false;
+    if (state.fiscal !== SELECT_ALL && (item.fiscal || "Sem fiscal") !== state.fiscal) return false;
+    if (state.prazo !== SELECT_ALL && !matchesPrazoFilter(item)) return false;
+    if (state.ano !== SELECT_ALL && item.anoVencimento !== state.ano) return false;
     return true;
   });
 }
@@ -325,11 +335,11 @@ function renderKpis(rows) {
 
   elements.kpiGrid.innerHTML = cards.map((card) => `
     <article class="kpi-card">
-      <span class="kpi-icon ${card.color}" aria-hidden="true"><i data-lucide="${card.icon}"></i></span>
+      <span class="kpi-icon ${escapeAttr(card.color)}" aria-hidden="true"><i data-lucide="${escapeAttr(card.icon)}"></i></span>
       <div>
-        <span>${card.label}</span>
-        <strong>${card.value}</strong>
-        <small>${card.note}</small>
+        <span>${escapeHtml(card.label)}</span>
+        <strong>${escapeHtml(card.value)}</strong>
+        <small>${escapeHtml(card.note)}</small>
       </div>
     </article>
   `).join("");
@@ -375,8 +385,8 @@ function renderInsights(rows) {
   ];
 
   elements.insightGrid.innerHTML = cards.map((card) => `
-    <article class="insight-card ${card.tone}">
-      <span class="insight-icon" aria-hidden="true"><i data-lucide="${card.icon}"></i></span>
+    <article class="insight-card ${escapeAttr(card.tone)}">
+      <span class="insight-icon" aria-hidden="true"><i data-lucide="${escapeAttr(card.icon)}"></i></span>
       <div>
         <span>${escapeHtml(card.label)}</span>
         <strong>${escapeHtml(card.value)}</strong>
@@ -416,12 +426,12 @@ function renderCharts(rows) {
 function renderActiveFilters() {
   const chipData = [];
   if (state.search) chipData.push({ key: "search", label: `Busca: ${elements.searchInput.value}` });
-  if (state.status !== "todos") chipData.push({ key: "status", label: `Status: ${state.status}` });
-  if (state.prazo !== "todos") chipData.push({ key: "prazo", label: `Prazo: ${elements.prazoFilter.options[elements.prazoFilter.selectedIndex].text}` });
-  if (state.modalidade !== "todos") chipData.push({ key: "modalidade", label: `Modalidade: ${state.modalidade}` });
-  if (state.gestor !== "todos") chipData.push({ key: "gestor", label: `Gestor: ${state.gestor}` });
-  if (state.fiscal !== "todos") chipData.push({ key: "fiscal", label: `Fiscal: ${state.fiscal}` });
-  if (state.ano !== "todos") chipData.push({ key: "ano", label: `Ano: ${state.ano}` });
+  if (state.status !== SELECT_ALL) chipData.push({ key: "status", label: `Status: ${state.status}` });
+  if (state.prazo !== SELECT_ALL) chipData.push({ key: "prazo", label: `Prazo: ${elements.prazoFilter.options[elements.prazoFilter.selectedIndex].text}` });
+  if (state.modalidade !== SELECT_ALL) chipData.push({ key: "modalidade", label: `Modalidade: ${state.modalidade}` });
+  if (state.gestor !== SELECT_ALL) chipData.push({ key: "gestor", label: `Gestor: ${state.gestor}` });
+  if (state.fiscal !== SELECT_ALL) chipData.push({ key: "fiscal", label: `Fiscal: ${state.fiscal}` });
+  if (state.ano !== SELECT_ALL) chipData.push({ key: "ano", label: `Ano: ${state.ano}` });
 
   elements.activeFilters.innerHTML = chipData.map((chip) => `
     <button class="filter-chip" type="button" data-clear-filter="${chip.key}" aria-label="Remover filtro ${escapeAttr(chip.label)}">
@@ -441,12 +451,12 @@ function updateFilterControls() {
 function getActiveFilterCount() {
   return [
     state.search,
-    state.status !== "todos",
-    state.prazo !== "todos",
-    state.modalidade !== "todos",
-    state.gestor !== "todos",
-    state.fiscal !== "todos",
-    state.ano !== "todos",
+    state.status !== SELECT_ALL,
+    state.prazo !== SELECT_ALL,
+    state.modalidade !== SELECT_ALL,
+    state.gestor !== SELECT_ALL,
+    state.fiscal !== SELECT_ALL,
+    state.ano !== SELECT_ALL,
   ].filter(Boolean).length;
 }
 
@@ -456,8 +466,8 @@ function hasActiveAdjustments() {
 
 function applyQuickFilter(filter) {
   const values = {
-    status: "todos",
-    prazo: "todos",
+    status: SELECT_ALL,
+    prazo: SELECT_ALL,
   };
 
   if (filter === "ativos") values.status = "Ativo";
@@ -482,10 +492,10 @@ function renderQuickFilterIndicators() {
 }
 
 function getCurrentQuickFilter() {
-  if (state.status === "Ativo" && state.prazo === "todos") return "ativos";
-  if (state.status === "todos" && state.prazo === "vencido") return "vencidos";
-  if (state.status === "todos" && state.prazo === "30") return "30";
-  if (state.status === "todos" && state.prazo === "todos") return "todos";
+  if (state.status === "Ativo" && state.prazo === SELECT_ALL) return "ativos";
+  if (state.status === SELECT_ALL && state.prazo === "vencido") return "vencidos";
+  if (state.status === SELECT_ALL && state.prazo === "30") return "30";
+  if (state.status === SELECT_ALL && state.prazo === SELECT_ALL) return SELECT_ALL;
   return "";
 }
 
@@ -500,7 +510,7 @@ function renderTable(rows) {
   elements.tableCount.textContent = formatTableCount(shown, rows.length, "vigentes");
 
   if (!rows.length) {
-    elements.table.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhum contrato encontrado.</td></tr>`;
+    elements.table.innerHTML = renderEmptyRow("Nenhum contrato encontrado.");
     elements.tablePager.innerHTML = "";
     return;
   }
@@ -513,7 +523,7 @@ function renderSectionTable(table, countElement, rows, label, emptyMessage) {
   countElement.textContent = `${numberFormat.format(rows.length)} contrato(s) ${label} no recorte atual`;
 
   if (!rows.length) {
-    table.innerHTML = `<tr><td colspan="9" class="empty-state">${emptyMessage}</td></tr>`;
+    table.innerHTML = renderEmptyRow(emptyMessage);
     return;
   }
 
@@ -522,7 +532,7 @@ function renderSectionTable(table, countElement, rows, label, emptyMessage) {
 
 function renderRows(rows) {
   return rows.map((item) => `
-    <tr class="${deadlineRowClass(item)}">
+    <tr class="${escapeAttr(deadlineRowClass(item))}">
       <td data-label="ID">${escapeHtml(item.id ?? "")}</td>
       <td class="object-cell" data-label="Objeto">
         <strong>${escapeHtml(item.objeto || "Sem objeto")}</strong>
@@ -533,9 +543,9 @@ function renderRows(rows) {
       <td class="money-cell" data-label="Valor">${currency.format(item.valor || 0)}</td>
       <td class="date-cell" data-label="Vencimento">
         ${formatDate(item.dataVencimentoDate)}
-        <br><span class="timing-pill ${timingClass(item)}">${escapeHtml(formatContractTiming(item))}</span>
+        <br><span class="timing-pill ${escapeAttr(timingClass(item))}">${escapeHtml(formatContractTiming(item))}</span>
       </td>
-      <td data-label="Status"><span class="status-badge ${statusClass(item.status)}">${escapeHtml(item.status || "Sem status")}</span></td>
+      <td data-label="Status"><span class="status-badge ${escapeAttr(statusClass(item.status))}">${escapeHtml(item.status || "Sem status")}</span></td>
       <td data-label="Gestor" class="${item.gestor ? "" : "muted"}">${escapeHtml(item.gestor || "Sem gestor")}</td>
       <td data-label="Fiscal" class="${item.fiscal ? "" : "muted"}">${escapeHtml(item.fiscal || "Sem fiscal")}</td>
     </tr>
@@ -588,13 +598,17 @@ function compareDueDateAsc(a, b) {
 }
 
 function renderSortIndicators() {
-  document.querySelectorAll("[data-sort]").forEach((button) => {
+  queryAll("[data-sort]").forEach((button) => {
     const label = button.dataset.label || button.textContent.trim().replace(/[↑↓]$/, "").trim();
     button.dataset.label = label;
     const active = button.dataset.sort === state.sortKey;
+    const direction = state.sortDir === "asc" ? "ascending" : "descending";
+    const headerCell = button.closest("th");
     button.classList.toggle("is-sorted", active);
     button.textContent = active ? `${label} ${state.sortDir === "asc" ? "↑" : "↓"}` : label;
-    button.setAttribute("aria-sort", active ? (state.sortDir === "asc" ? "ascending" : "descending") : "none");
+    button.setAttribute("aria-label", active ? `Ordenar por ${label}, atualmente ${state.sortDir === "asc" ? "crescente" : "decrescente"}` : `Ordenar por ${label}`);
+    button.removeAttribute("aria-sort");
+    if (headerCell) headerCell.setAttribute("aria-sort", active ? direction : "none");
   });
   syncSortControls();
 }
@@ -616,9 +630,9 @@ function clearSingleFilter(key) {
     state.search = "";
     elements.searchInput.value = "";
   } else if (Object.prototype.hasOwnProperty.call(state, key)) {
-    state[key] = "todos";
+    state[key] = SELECT_ALL;
     const select = elements[`${key}Filter`];
-    if (select) select.value = "todos";
+    if (select) select.value = SELECT_ALL;
   }
   resetVisibleLimit();
   render();
@@ -630,6 +644,10 @@ function syncSortControls() {
   elements.sortDirBtn.classList.toggle("is-desc", state.sortDir === "desc");
 }
 
+function renderEmptyRow(message) {
+  return `<tr><td colspan="${TABLE_COLUMN_COUNT}" class="empty-state">${escapeHtml(message)}</td></tr>`;
+}
+
 function applyDensityMode() {
   document.body.classList.toggle("is-compact", state.compactRows);
   elements.densityBtn.setAttribute("aria-pressed", String(state.compactRows));
@@ -638,7 +656,7 @@ function applyDensityMode() {
 
 function getStoredCompactRows() {
   try {
-    return localStorage.getItem(compactStorageKey) === "true";
+    return localStorage.getItem(STORAGE_KEYS.compactRows) === "true";
   } catch {
     return false;
   }
@@ -646,7 +664,7 @@ function getStoredCompactRows() {
 
 function storeCompactRows(value) {
   try {
-    localStorage.setItem(compactStorageKey, String(value));
+    localStorage.setItem(STORAGE_KEYS.compactRows, String(value));
   } catch {
     // The view still works when browser storage is unavailable.
   }
@@ -690,8 +708,35 @@ function getPageSize() {
   return isSmallViewport() ? pageSize.mobile : pageSize.desktop;
 }
 
+function normalizeSourceData(data) {
+  if (!data || !Array.isArray(data.records)) {
+    return { records: [], generatedAt: null };
+  }
+  return data;
+}
+
+function queryRequired(selector) {
+  const element = document.querySelector(selector);
+  if (!element) {
+    throw new Error(`Elemento obrigatório não encontrado: ${selector}`);
+  }
+  return element;
+}
+
+function queryAll(selector) {
+  return [...document.querySelectorAll(selector)];
+}
+
+function addMediaChangeListener(mediaQuery, listener) {
+  if (typeof mediaQuery.addEventListener === "function") {
+    mediaQuery.addEventListener("change", listener);
+    return;
+  }
+  mediaQuery.addListener(listener);
+}
+
 function fillSelect(select, allLabel, options) {
-  select.innerHTML = [`<option value="todos">${allLabel}</option>`]
+  select.innerHTML = [`<option value="${SELECT_ALL}">${escapeHtml(allLabel)}</option>`]
     .concat(options.map((option) => `<option value="${escapeAttr(option)}">${escapeHtml(option)}</option>`))
     .join("");
 }
@@ -779,8 +824,14 @@ function timingClass(item) {
 }
 
 function statusClass(status) {
-  const slug = normalizeText(status).replace(/\s+/g, "-");
+  const slug = slugifyClassName(status);
   return `status-${slug || "sem-status"}`;
+}
+
+function slugifyClassName(value) {
+  return normalizeText(value)
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function sum(rows, key) {
@@ -822,7 +873,7 @@ function compactCurrency(value) {
 }
 
 function isSmallViewport() {
-  return window.matchMedia("(max-width: 720px)").matches;
+  return window.matchMedia(`(max-width: ${BREAKPOINTS.small}px)`).matches;
 }
 
 function shortLabel(label, length = 22) {
