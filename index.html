@@ -158,6 +158,30 @@
           </article>
         </section>
 
+        <section class="status-sections" aria-label="Contratos separados por situação">
+          <article class="panel contract-list-panel active-contracts-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Contratos ativos</h2>
+                <p id="activeContractsHint"></p>
+              </div>
+              <i data-lucide="check-circle-2"></i>
+            </div>
+            <div id="activeContractsList" class="status-contract-list"></div>
+          </article>
+
+          <article class="panel contract-list-panel expired-contracts-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Contratos vencidos</h2>
+                <p id="expiredContractsHint"></p>
+              </div>
+              <i data-lucide="circle-alert"></i>
+            </div>
+            <div id="expiredContractsList" class="status-contract-list"></div>
+          </article>
+        </section>
+
         <section class="panel table-panel">
           <div class="table-toolbar">
             <div>

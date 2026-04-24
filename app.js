@@ -50,6 +50,10 @@ const elements = {
   criticalHint: document.querySelector("#criticalHint"),
   responsaveisList: document.querySelector("#responsaveisList"),
   responsaveisHint: document.querySelector("#responsaveisHint"),
+  activeContractsList: document.querySelector("#activeContractsList"),
+  activeContractsHint: document.querySelector("#activeContractsHint"),
+  expiredContractsList: document.querySelector("#expiredContractsList"),
+  expiredContractsHint: document.querySelector("#expiredContractsHint"),
   statusChartHint: document.querySelector("#statusChartHint"),
   modalidadeChartHint: document.querySelector("#modalidadeChartHint"),
   vencimentosChartHint: document.querySelector("#vencimentosChartHint"),
@@ -187,6 +191,7 @@ function render() {
   renderCharts(filtered);
   renderCritical(filtered);
   renderResponsaveis(filtered);
+  renderStatusSections(filtered);
   renderActiveFilters();
   renderTable(sorted);
   renderSortIndicators();
@@ -320,6 +325,47 @@ function renderResponsaveis(rows) {
   `;
 }
 
+function renderStatusSections(rows) {
+  const activeRows = sortByDueDateAsc(rows.filter((item) => normalizeText(item.status) === "ativo"));
+  const expiredRows = sortByDueDateAsc(rows.filter((item) => !item.isClosed && item.diasAtual !== null && item.diasAtual < 0));
+
+  elements.activeContractsHint.textContent = formatSectionHint(activeRows.length, "ativo(s)");
+  elements.expiredContractsHint.textContent = formatSectionHint(expiredRows.length, "vencido(s) não encerrado(s)");
+  elements.activeContractsList.innerHTML = renderStatusContractList(activeRows, "active");
+  elements.expiredContractsList.innerHTML = renderStatusContractList(expiredRows, "expired");
+}
+
+function formatSectionHint(count, label) {
+  const prefix = `${numberFormat.format(count)} ${label}`;
+  return count > 10 ? `${prefix} · 10 primeiros por vencimento` : `${prefix} no recorte atual`;
+}
+
+function renderStatusContractList(rows, variant) {
+  if (!rows.length) {
+    const message = variant === "active"
+      ? "Nenhum contrato ativo no recorte atual."
+      : "Nenhum contrato vencido no recorte atual.";
+    return `<div class="empty-state">${message}</div>`;
+  }
+
+  return rows.slice(0, 10).map((item) => `
+    <article class="status-contract-card ${variant}">
+      <div class="status-contract-main">
+        <strong title="${escapeHtml(item.objeto || "")}">${escapeHtml(item.objeto || "Sem objeto")}</strong>
+        <span>${escapeHtml(item.contrato || "Sem contrato")} · ${escapeHtml(item.empresa || "Sem empresa")}</span>
+      </div>
+      <div class="status-contract-meta">
+        <span>${formatDate(item.dataVencimentoDate)}</span>
+        <span>${currency.format(item.valor || 0)}</span>
+        <span>${escapeHtml(item.gestor || "Sem gestor")}</span>
+      </div>
+      <span class="status-contract-badge ${variant}">
+        ${variant === "expired" ? `${Math.abs(item.diasAtual || 0)}d vencido` : formatDays(item.diasAtual)}
+      </span>
+    </article>
+  `).join("");
+}
+
 function renderMetricGroup(title, data) {
   if (!data.length) {
     return `<div class="metric-group"><h3>${title}</h3><div class="empty-state">Sem registros no recorte atual.</div></div>`;
@@ -407,6 +453,20 @@ function sortRows(rows) {
     return String(av || "").localeCompare(String(bv || ""), "pt-BR", { sensitivity: "base" }) * dir;
   });
   return sorted;
+}
+
+function sortByDueDateAsc(rows) {
+  return [...rows].sort(compareDueDateAsc);
+}
+
+function compareDueDateAsc(a, b) {
+  const aMissing = !a.dataVencimentoDate;
+  const bMissing = !b.dataVencimentoDate;
+  if (aMissing && bMissing) return Number(a.id || 0) - Number(b.id || 0);
+  if (aMissing) return 1;
+  if (bMissing) return -1;
+  const result = a.dataVencimentoDate.getTime() - b.dataVencimentoDate.getTime();
+  return result === 0 ? Number(a.id || 0) - Number(b.id || 0) : result;
 }
 
 function renderSortIndicators() {
