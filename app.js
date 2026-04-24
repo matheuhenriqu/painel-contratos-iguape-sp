@@ -43,7 +43,6 @@ const elements = {
   anoFilter: document.querySelector("#anoFilter"),
   searchInput: document.querySelector("#searchInput"),
   clearFiltersBtn: document.querySelector("#clearFiltersBtn"),
-  exportBtn: document.querySelector("#exportBtn"),
   table: document.querySelector("#contractsTable"),
   tableCount: document.querySelector("#tableCount"),
   activeFilters: document.querySelector("#activeFilters"),
@@ -165,10 +164,6 @@ function bindEvents() {
     elements.prazoFilter.value = "todos";
     elements.anoFilter.value = "todos";
     render();
-  });
-
-  elements.exportBtn.addEventListener("click", () => {
-    exportCsv(getFilteredRows());
   });
 
   document.querySelectorAll("[data-sort]").forEach((button) => {
@@ -648,34 +643,6 @@ function deadlineOptions() {
       },
     },
   };
-}
-
-function exportCsv(rows) {
-  const header = ["ID", "Objeto", "Contrato", "Empresa", "Modalidade", "Valor", "Data Vencimento", "Dias atuais", "Status", "Gestor", "Fiscal", "Observações"];
-  const body = rows.map((item) => [
-    item.id,
-    item.objeto,
-    item.contrato,
-    item.empresa,
-    item.modalidade,
-    item.valor,
-    item.dataVencimento,
-    item.diasAtual,
-    item.status,
-    item.gestor,
-    item.fiscal,
-    item.observacoes,
-  ]);
-  const csv = [header, ...body]
-    .map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(";"))
-    .join("\n");
-  const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "contratos-filtrados.csv";
-  link.click();
-  URL.revokeObjectURL(url);
 }
 
 function escapeHtml(value) {
