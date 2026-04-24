@@ -3,6 +3,10 @@ const defaultSort = {
   key: "dataVencimento",
   dir: "asc",
 };
+const pageSize = {
+  desktop: 80,
+  mobile: 30,
+};
 
 const state = {
   search: "",
@@ -14,6 +18,7 @@ const state = {
   ano: "todos",
   sortKey: defaultSort.key,
   sortDir: defaultSort.dir,
+  visibleLimit: pageSize.desktop,
 };
 
 const charts = {};
@@ -48,7 +53,11 @@ const elements = {
   clearFiltersBtn: document.querySelector("#clearFiltersBtn"),
   table: document.querySelector("#contractsTable"),
   tableCount: document.querySelector("#tableCount"),
+  tablePager: document.querySelector("#tablePager"),
   activeFilters: document.querySelector("#activeFilters"),
+  sortField: document.querySelector("#sortField"),
+  sortDirBtn: document.querySelector("#sortDirBtn"),
+  sortDirLabel: document.querySelector("#sortDirLabel"),
   criticalList: document.querySelector("#criticalList"),
   criticalHint: document.querySelector("#criticalHint"),
   responsaveisList: document.querySelector("#responsaveisList"),
@@ -89,6 +98,7 @@ const records = sourceData.records.map((record) => {
 });
 
 function init() {
+  resetVisibleLimit();
   hydrateFilters();
   configureFilterPanel();
   bindEvents();
@@ -132,6 +142,7 @@ function bindEvents() {
 
   elements.searchInput.addEventListener("input", (event) => {
     state.search = normalizeText(event.target.value);
+    resetVisibleLimit();
     render();
   });
 
@@ -158,8 +169,39 @@ function bindEvents() {
   ].forEach(([key, element]) => {
     element.addEventListener("change", (event) => {
       state[key] = event.target.value;
+      resetVisibleLimit();
       render();
     });
+  });
+
+  elements.sortField.addEventListener("change", (event) => {
+    state.sortKey = event.target.value;
+    state.sortDir = state.sortKey === "valor" ? "desc" : "asc";
+    resetVisibleLimit();
+    render();
+  });
+
+  elements.sortDirBtn.addEventListener("click", () => {
+    state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+    resetVisibleLimit();
+    render();
+  });
+
+  elements.activeFilters.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-clear-filter]");
+    if (!button) return;
+    clearSingleFilter(button.dataset.clearFilter);
+  });
+
+  elements.tablePager.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-page-action]");
+    if (!button) return;
+    if (button.dataset.pageAction === "all") {
+      state.visibleLimit = Number.MAX_SAFE_INTEGER;
+    } else {
+      state.visibleLimit += getPageSize();
+    }
+    render();
   });
 
   elements.clearFiltersBtn.addEventListener("click", () => {
@@ -174,6 +216,7 @@ function bindEvents() {
       sortKey: defaultSort.key,
       sortDir: defaultSort.dir,
     });
+    resetVisibleLimit();
     elements.searchInput.value = "";
     elements.statusFilter.value = "todos";
     elements.modalidadeFilter.value = "todos";
@@ -193,6 +236,7 @@ function bindEvents() {
         state.sortKey = key;
         state.sortDir = key === "valor" ? "desc" : "asc";
       }
+      resetVisibleLimit();
       render();
     });
   });
@@ -451,15 +495,21 @@ function renderMetricGroup(title, data) {
 }
 
 function renderActiveFilters() {
-  const chips = [];
-  if (state.search) chips.push(`Busca: ${elements.searchInput.value}`);
-  if (state.status !== "todos") chips.push(`Status: ${state.status}`);
-  if (state.prazo !== "todos") chips.push(`Prazo: ${elements.prazoFilter.options[elements.prazoFilter.selectedIndex].text}`);
-  if (state.modalidade !== "todos") chips.push(`Modalidade: ${state.modalidade}`);
-  if (state.gestor !== "todos") chips.push(`Gestor: ${state.gestor}`);
-  if (state.fiscal !== "todos") chips.push(`Fiscal: ${state.fiscal}`);
-  if (state.ano !== "todos") chips.push(`Ano: ${state.ano}`);
-  elements.activeFilters.innerHTML = chips.map((chip) => `<span class="filter-chip">${escapeHtml(chip)}</span>`).join("");
+  const chipData = [];
+  if (state.search) chipData.push({ key: "search", label: `Busca: ${elements.searchInput.value}` });
+  if (state.status !== "todos") chipData.push({ key: "status", label: `Status: ${state.status}` });
+  if (state.prazo !== "todos") chipData.push({ key: "prazo", label: `Prazo: ${elements.prazoFilter.options[elements.prazoFilter.selectedIndex].text}` });
+  if (state.modalidade !== "todos") chipData.push({ key: "modalidade", label: `Modalidade: ${state.modalidade}` });
+  if (state.gestor !== "todos") chipData.push({ key: "gestor", label: `Gestor: ${state.gestor}` });
+  if (state.fiscal !== "todos") chipData.push({ key: "fiscal", label: `Fiscal: ${state.fiscal}` });
+  if (state.ano !== "todos") chipData.push({ key: "ano", label: `Ano: ${state.ano}` });
+
+  elements.activeFilters.innerHTML = chipData.map((chip) => `
+    <button class="filter-chip" type="button" data-clear-filter="${chip.key}" aria-label="Remover filtro ${escapeAttr(chip.label)}">
+      <span>${escapeHtml(chip.label)}</span>
+      <i data-lucide="x"></i>
+    </button>
+  `).join("");
 }
 
 function applyQuickFilter(filter) {
@@ -476,6 +526,7 @@ function applyQuickFilter(filter) {
   state.prazo = values.prazo;
   elements.statusFilter.value = values.status;
   elements.prazoFilter.value = values.prazo;
+  resetVisibleLimit();
   render();
 }
 
@@ -502,14 +553,17 @@ function matchesPrazoFilter(item) {
 }
 
 function renderTable(rows) {
-  elements.tableCount.textContent = `Mostrando ${numberFormat.format(rows.length)} de ${numberFormat.format(records.length)} contratos`;
+  const visibleRows = rows.slice(0, state.visibleLimit);
+  const shown = visibleRows.length;
+  elements.tableCount.textContent = formatTableCount(shown, rows.length);
 
   if (!rows.length) {
     elements.table.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhum contrato encontrado.</td></tr>`;
+    elements.tablePager.innerHTML = "";
     return;
   }
 
-  elements.table.innerHTML = rows.map((item) => `
+  elements.table.innerHTML = visibleRows.map((item) => `
     <tr>
       <td data-label="ID">${escapeHtml(item.id ?? "")}</td>
       <td class="object-cell" data-label="Objeto">
@@ -528,6 +582,7 @@ function renderTable(rows) {
       <td data-label="Fiscal" class="${item.fiscal ? "" : "muted"}">${escapeHtml(item.fiscal || "Sem fiscal")}</td>
     </tr>
   `).join("");
+  renderTablePager(rows.length, shown);
 }
 
 function configureFilterPanel() {
@@ -584,6 +639,64 @@ function renderSortIndicators() {
     button.textContent = active ? `${label} ${state.sortDir === "asc" ? "↑" : "↓"}` : label;
     button.setAttribute("aria-sort", active ? (state.sortDir === "asc" ? "ascending" : "descending") : "none");
   });
+  syncSortControls();
+}
+
+function clearSingleFilter(key) {
+  if (key === "search") {
+    state.search = "";
+    elements.searchInput.value = "";
+  } else if (Object.prototype.hasOwnProperty.call(state, key)) {
+    state[key] = "todos";
+    const select = elements[`${key}Filter`];
+    if (select) select.value = "todos";
+  }
+  resetVisibleLimit();
+  render();
+}
+
+function syncSortControls() {
+  elements.sortField.value = state.sortKey;
+  elements.sortDirLabel.textContent = state.sortDir === "asc" ? "Crescente" : "Decrescente";
+  elements.sortDirBtn.classList.toggle("is-desc", state.sortDir === "desc");
+}
+
+function formatTableCount(shown, filteredTotal) {
+  const shownText = numberFormat.format(shown);
+  const filteredText = numberFormat.format(filteredTotal);
+  const totalText = numberFormat.format(records.length);
+  if (filteredTotal === records.length) return `Mostrando ${shownText} de ${totalText} contratos`;
+  return `Mostrando ${shownText} de ${filteredText} contratos filtrados · ${totalText} na base`;
+}
+
+function renderTablePager(total, shown) {
+  if (shown >= total) {
+    elements.tablePager.innerHTML = "";
+    return;
+  }
+
+  const remaining = total - shown;
+  elements.tablePager.innerHTML = `
+    <span>${numberFormat.format(remaining)} contrato(s) restantes</span>
+    <div>
+      <button class="pager-button" type="button" data-page-action="more">
+        <i data-lucide="chevrons-down"></i>
+        <span>Mostrar mais</span>
+      </button>
+      <button class="pager-button" type="button" data-page-action="all">
+        <i data-lucide="list"></i>
+        <span>Mostrar todos</span>
+      </button>
+    </div>
+  `;
+}
+
+function resetVisibleLimit() {
+  state.visibleLimit = getPageSize();
+}
+
+function getPageSize() {
+  return isSmallViewport() ? pageSize.mobile : pageSize.desktop;
 }
 
 function fillSelect(select, allLabel, options) {
