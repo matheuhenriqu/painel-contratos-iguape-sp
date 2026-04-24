@@ -57,7 +57,7 @@
             <span>Busca</span>
             <div class="input-shell">
               <i data-lucide="search"></i>
-              <input id="searchInput" type="search" placeholder="Objeto, empresa, contrato..." autocomplete="off">
+              <input id="searchInput" type="search" placeholder="Objeto, empresa, contrato, processo..." autocomplete="off">
               <button id="clearSearchBtn" class="input-clear-button" type="button" aria-label="Limpar busca" hidden>
                 <i data-lucide="x"></i>
               </button>
@@ -182,6 +182,8 @@
                 <select id="sortField">
                   <option value="dataVencimento">Vencimento</option>
                   <option value="valor">Valor</option>
+                  <option value="contrato">Contrato</option>
+                  <option value="processo">Processo</option>
                   <option value="objeto">Objeto</option>
                   <option value="empresa">Empresa</option>
                   <option value="modalidade">Modalidade</option>
@@ -197,9 +199,10 @@
               </button>
               <button id="densityBtn" class="density-button" type="button" aria-pressed="false">
                 <i data-lucide="rows-3"></i>
-                <span>Compacto</span>
+                <span id="densityLabel">Compacto</span>
               </button>
             </div>
+            <p id="resultSummary" class="result-summary" aria-live="polite"></p>
             <div id="activeFilters" class="active-filters" aria-live="polite"></div>
           </div>
           <div class="table-scroll">
@@ -207,6 +210,8 @@
               <thead>
                 <tr>
                   <th><button type="button" data-sort="id">ID</button></th>
+                  <th><button type="button" data-sort="contrato">Contrato</button></th>
+                  <th><button type="button" data-sort="processo">Processo</button></th>
                   <th><button type="button" data-sort="objeto">Objeto</button></th>
                   <th><button type="button" data-sort="empresa">Empresa</button></th>
                   <th><button type="button" data-sort="modalidade">Modalidade</button></th>
@@ -239,6 +244,8 @@
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Contrato</th>
+                    <th>Processo</th>
                     <th>Objeto</th>
                     <th>Empresa</th>
                     <th>Modalidade</th>
@@ -269,6 +276,8 @@
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Contrato</th>
+                    <th>Processo</th>
                     <th>Objeto</th>
                     <th>Empresa</th>
                     <th>Modalidade</th>

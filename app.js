@@ -1,5 +1,5 @@
 const SELECT_ALL = "todos";
-const TABLE_COLUMN_COUNT = 9;
+const TABLE_COLUMN_COUNT = 11;
 const MS_PER_DAY = 86_400_000;
 const BREAKPOINTS = {
   small: 720,
@@ -8,6 +8,23 @@ const BREAKPOINTS = {
 const STORAGE_KEYS = {
   compactRows: "contratosIguapeCompactRows",
 };
+const URL_PARAM_KEYS = {
+  search: "busca",
+  status: "status",
+  modalidade: "modalidade",
+  gestor: "gestor",
+  fiscal: "fiscal",
+  prazo: "prazo",
+  ano: "ano",
+  sortKey: "ordem",
+  sortDir: "direcao",
+  compactRows: "compacto",
+};
+const SORT_KEYS = new Set(["id", "contrato", "processo", "objeto", "empresa", "modalidade", "valor", "dataVencimento", "status", "gestor", "fiscal"]);
+const collator = new Intl.Collator("pt-BR", {
+  numeric: true,
+  sensitivity: "base",
+});
 
 const sourceData = normalizeSourceData(window.CONTRATOS_DATA);
 const defaultSort = {
@@ -77,6 +94,8 @@ const elements = {
   sortDirBtn: queryRequired("#sortDirBtn"),
   sortDirLabel: queryRequired("#sortDirLabel"),
   densityBtn: queryRequired("#densityBtn"),
+  densityLabel: queryRequired("#densityLabel"),
+  resultSummary: queryRequired("#resultSummary"),
   sectionToggleButtons: queryAll("[data-section-toggle]"),
   backToTopBtn: queryRequired("#backToTopBtn"),
   statusChartHint: queryRequired("#statusChartHint"),
@@ -88,18 +107,11 @@ const today = startOfDay(new Date());
 const records = sourceData.records.map((record) => {
   const dataVencimento = parseDate(record.dataVencimento);
   const diasAtual = dataVencimento ? Math.ceil((dataVencimento - today) / MS_PER_DAY) : null;
+  const normalized = buildSearchIndex(record);
   return {
     ...record,
-    normalized: normalizeText([
-      record.objeto,
-      record.empresa,
-      record.contrato,
-      record.processo,
-      record.modalidade,
-      record.gestor,
-      record.fiscal,
-      record.observacoes,
-    ].join(" ")),
+    normalized,
+    normalizedCompact: compactSearchText(normalized),
     dataVencimentoDate: dataVencimento,
     dataInicioDate: parseDate(record.dataInicio),
     diasAtual,
@@ -110,10 +122,11 @@ const records = sourceData.records.map((record) => {
 });
 
 function init() {
-  state.compactRows = getStoredCompactRows();
-  applyDensityMode();
   resetVisibleLimit();
   hydrateFilters();
+  restoreStateFromUrl({ useStoredDensity: true });
+  syncFilterInputs();
+  applyDensityMode();
   configureFilterPanel();
   bindEvents();
   render();
@@ -213,6 +226,7 @@ function bindEvents() {
     state.compactRows = !state.compactRows;
     storeCompactRows(state.compactRows);
     applyDensityMode();
+    updateUrlFromState();
   });
 
   elements.activeFilters.addEventListener("click", (event) => {
@@ -265,6 +279,13 @@ function bindEvents() {
   });
 
   window.addEventListener("scroll", scheduleBackToTopUpdate, { passive: true });
+  window.addEventListener("popstate", () => {
+    restoreStateFromUrl({ useStoredDensity: false });
+    syncFilterInputs();
+    applyDensityMode();
+    resetVisibleLimit();
+    render({ syncUrl: false });
+  });
 
   queryAll("[data-sort]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -281,7 +302,7 @@ function bindEvents() {
   });
 }
 
-function render() {
+function render(options = {}) {
   const filtered = getFilteredRows();
   const currentRows = sortRows(filtered.filter(isCurrentContract));
   const expiredRows = sortRows(filtered.filter(isExpiredContract));
@@ -291,6 +312,7 @@ function render() {
   renderCharts(filtered);
   renderQuickFilterIndicators();
   renderActiveFilters();
+  renderResultSummary(filtered.length, currentRows.length, expiredRows.length, completedRows.length);
   updateFilterControls();
   renderTable(currentRows);
   renderSectionTable(elements.expiredTable, elements.expiredTableCount, expiredRows, "vencido(s)", "Nenhum contrato vencido no recorte atual.");
@@ -308,11 +330,13 @@ function render() {
   if (window.lucide) {
     window.lucide.createIcons();
   }
+  if (options.syncUrl !== false) updateUrlFromState();
 }
 
 function getFilteredRows() {
+  const searchTerms = getSearchTerms(state.search);
   return records.filter((item) => {
-    if (state.search && !item.normalized.includes(state.search)) return false;
+    if (searchTerms.length && !matchesSearchTerms(item, searchTerms)) return false;
     if (state.status !== SELECT_ALL && (item.status || "Sem status") !== state.status) return false;
     if (state.modalidade !== SELECT_ALL && (item.modalidade || "Sem modalidade") !== state.modalidade) return false;
     if (state.gestor !== SELECT_ALL && (item.gestor || "Sem gestor") !== state.gestor) return false;
@@ -446,6 +470,16 @@ function renderActiveFilters() {
   `).join("");
 }
 
+function renderResultSummary(filteredTotal, currentTotal, expiredTotal, completedTotal) {
+  const prefix = getActiveFilterCount() ? "resultado(s) encontrado(s)" : "contrato(s) na base";
+  elements.resultSummary.textContent = [
+    `${numberFormat.format(filteredTotal)} ${prefix}`,
+    `${numberFormat.format(currentTotal)} vigente(s)`,
+    `${numberFormat.format(expiredTotal)} vencido(s)`,
+    `${numberFormat.format(completedTotal)} concluído(s)`,
+  ].join(" · ");
+}
+
 function updateFilterControls() {
   const count = getActiveFilterCount();
   elements.filterCountBadge.hidden = count === 0;
@@ -539,9 +573,10 @@ function renderRows(rows) {
   return rows.map((item) => `
     <tr class="${escapeAttr(deadlineRowClass(item))}">
       <td data-label="ID">${escapeHtml(item.id ?? "")}</td>
+      <td data-label="Contrato">${escapeHtml(item.contrato || "Sem contrato")}</td>
+      <td data-label="Processo">${escapeHtml(item.processo || "Sem processo")}</td>
       <td class="object-cell" data-label="Objeto">
         <strong>${escapeHtml(item.objeto || "Sem objeto")}</strong>
-        <span>${escapeHtml(item.contrato || "Sem contrato")} · Processo ${escapeHtml(item.processo || "sem processo")}</span>
       </td>
       <td data-label="Empresa">${escapeHtml(item.empresa || "Sem empresa")}</td>
       <td data-label="Modalidade">${escapeHtml(item.modalidade || "Sem modalidade")}</td>
@@ -574,23 +609,39 @@ function setFiltersCollapsed(collapsed) {
 function sortRows(rows) {
   const sorted = [...rows];
   const dir = state.sortDir === "asc" ? 1 : -1;
-  sorted.sort((a, b) => {
-    if (state.sortKey === "dataVencimento") {
-      const aMissing = !a.dataVencimentoDate;
-      const bMissing = !b.dataVencimentoDate;
-      if (aMissing && bMissing) return Number(a.id || 0) - Number(b.id || 0);
-      if (aMissing) return 1;
-      if (bMissing) return -1;
-      const result = a.dataVencimentoDate.getTime() - b.dataVencimentoDate.getTime();
-      return result === 0 ? Number(a.id || 0) - Number(b.id || 0) : result * dir;
-    }
-
-    let av = a[state.sortKey];
-    let bv = b[state.sortKey];
-    if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
-    return String(av || "").localeCompare(String(bv || ""), "pt-BR", { sensitivity: "base" }) * dir;
-  });
+  sorted.sort((a, b) => compareRowsBySort(a, b, state.sortKey, dir));
   return sorted;
+}
+
+function compareRowsBySort(a, b, key, dir) {
+  const fallback = Number(a.id || 0) - Number(b.id || 0);
+
+  if (key === "dataVencimento") {
+    const result = compareNullableValues(a.dataVencimentoDate?.getTime(), b.dataVencimentoDate?.getTime(), (av, bv) => av - bv);
+    return result === 0 ? fallback : result * dir;
+  }
+
+  if (key === "valor" || key === "id") {
+    const result = compareNullableValues(Number(a[key]), Number(b[key]), (av, bv) => av - bv);
+    return result === 0 ? fallback : result * dir;
+  }
+
+  const result = compareNullableValues(a[key], b[key], (av, bv) => collator.compare(String(av), String(bv)));
+  return result === 0 ? fallback : result * dir;
+}
+
+function compareNullableValues(a, b, compare) {
+  const aMissing = isMissingSortValue(a);
+  const bMissing = isMissingSortValue(b);
+  if (aMissing && bMissing) return 0;
+  if (aMissing) return 1;
+  if (bMissing) return -1;
+  return compare(a, b);
+}
+
+function isMissingSortValue(value) {
+  if (value === null || value === undefined || value === "") return true;
+  return typeof value === "number" && Number.isNaN(value);
 }
 
 function sortByDueDateAsc(rows) {
@@ -635,10 +686,95 @@ function isCompletedContract(item) {
   return item.isClosed;
 }
 
+function restoreStateFromUrl({ useStoredDensity }) {
+  const params = new URLSearchParams(window.location.search);
+  const searchText = params.get(URL_PARAM_KEYS.search) || "";
+
+  Object.assign(state, {
+    search: normalizeText(searchText),
+    status: getAllowedSelectValue(elements.statusFilter, params.get(URL_PARAM_KEYS.status)),
+    modalidade: getAllowedSelectValue(elements.modalidadeFilter, params.get(URL_PARAM_KEYS.modalidade)),
+    gestor: getAllowedSelectValue(elements.gestorFilter, params.get(URL_PARAM_KEYS.gestor)),
+    fiscal: getAllowedSelectValue(elements.fiscalFilter, params.get(URL_PARAM_KEYS.fiscal)),
+    prazo: getAllowedSelectValue(elements.prazoFilter, params.get(URL_PARAM_KEYS.prazo)),
+    ano: getAllowedSelectValue(elements.anoFilter, params.get(URL_PARAM_KEYS.ano)),
+    sortKey: getAllowedSortKey(params.get(URL_PARAM_KEYS.sortKey)),
+    sortDir: getAllowedSortDir(params.get(URL_PARAM_KEYS.sortDir)),
+    compactRows: getUrlDensityValue(params, useStoredDensity),
+  });
+
+  elements.searchInput.value = searchText;
+}
+
+function syncFilterInputs() {
+  elements.statusFilter.value = state.status;
+  elements.modalidadeFilter.value = state.modalidade;
+  elements.gestorFilter.value = state.gestor;
+  elements.fiscalFilter.value = state.fiscal;
+  elements.prazoFilter.value = state.prazo;
+  elements.anoFilter.value = state.ano;
+  updateSearchClearButton();
+  syncSortControls();
+  updateFilterControls();
+}
+
+function getAllowedSelectValue(select, value) {
+  if (!value) return SELECT_ALL;
+  return [...select.options].some((option) => option.value === value) ? value : SELECT_ALL;
+}
+
+function getAllowedSortKey(value) {
+  return SORT_KEYS.has(value) ? value : defaultSort.key;
+}
+
+function getAllowedSortDir(value) {
+  return value === "asc" || value === "desc" ? value : defaultSort.dir;
+}
+
+function getUrlDensityValue(params, useStoredDensity) {
+  const value = params.get(URL_PARAM_KEYS.compactRows);
+  if (value === "1") return true;
+  if (value === "0") return false;
+  return useStoredDensity ? getStoredCompactRows() : false;
+}
+
+function updateUrlFromState() {
+  const params = new URLSearchParams();
+  const searchText = elements.searchInput.value.trim();
+
+  if (searchText) params.set(URL_PARAM_KEYS.search, searchText);
+  setFilterParam(params, URL_PARAM_KEYS.status, state.status);
+  setFilterParam(params, URL_PARAM_KEYS.modalidade, state.modalidade);
+  setFilterParam(params, URL_PARAM_KEYS.gestor, state.gestor);
+  setFilterParam(params, URL_PARAM_KEYS.fiscal, state.fiscal);
+  setFilterParam(params, URL_PARAM_KEYS.prazo, state.prazo);
+  setFilterParam(params, URL_PARAM_KEYS.ano, state.ano);
+  if (state.sortKey !== defaultSort.key) params.set(URL_PARAM_KEYS.sortKey, state.sortKey);
+  if (state.sortDir !== defaultSort.dir) params.set(URL_PARAM_KEYS.sortDir, state.sortDir);
+  if (state.compactRows) params.set(URL_PARAM_KEYS.compactRows, "1");
+
+  const query = params.toString();
+  const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+  const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+  if (nextUrl !== currentUrl) {
+    try {
+      window.history.replaceState(null, "", nextUrl);
+    } catch {
+      // A URL continua opcional; a consulta segue funcionando mesmo sem History API.
+    }
+  }
+}
+
+function setFilterParam(params, key, value) {
+  if (value !== SELECT_ALL) params.set(key, value);
+}
+
 function clearSingleFilter(key) {
   if (key === "search") {
     state.search = "";
     elements.searchInput.value = "";
+    updateSearchClearButton();
   } else if (Object.prototype.hasOwnProperty.call(state, key)) {
     state[key] = SELECT_ALL;
     const select = elements[`${key}Filter`];
@@ -662,6 +798,8 @@ function applyDensityMode() {
   document.body.classList.toggle("is-compact", state.compactRows);
   elements.densityBtn.setAttribute("aria-pressed", String(state.compactRows));
   elements.densityBtn.classList.toggle("is-active", state.compactRows);
+  elements.densityBtn.setAttribute("aria-label", state.compactRows ? "Ativar modo confortável" : "Ativar modo compacto");
+  elements.densityLabel.textContent = state.compactRows ? "Confortável" : "Compacto";
 }
 
 function getStoredCompactRows() {
@@ -725,6 +863,21 @@ function normalizeSourceData(data) {
   return data;
 }
 
+function buildSearchIndex(record) {
+  return normalizeText([
+    record.objeto,
+    record.empresa,
+    record.contrato,
+    record.processo,
+    record.modalidade,
+    record.numeroModalidade,
+    record.gestor,
+    record.fiscal,
+    record.observacoes,
+    record.status,
+  ].join(" "));
+}
+
 function queryRequired(selector) {
   const element = document.querySelector(selector);
   if (!element) {
@@ -762,6 +915,21 @@ function normalizeText(value) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
+}
+
+function compactSearchText(value) {
+  return normalizeText(value).replace(/[^a-z0-9]+/g, "");
+}
+
+function getSearchTerms(value) {
+  return normalizeText(value).split(/\s+/).filter(Boolean);
+}
+
+function matchesSearchTerms(item, terms) {
+  return terms.every((term) => {
+    const compactTerm = compactSearchText(term);
+    return item.normalized.includes(term) || Boolean(compactTerm && item.normalizedCompact.includes(compactTerm));
+  });
 }
 
 function parseDate(value) {
