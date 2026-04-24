@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Painel de gestão de contratos de Iguape/SP">
+    <title>Painel de Contratos - Iguape/SP</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="data/contratos.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><i data-lucide="landmark"></i></span>
+        <div>
+          <h1>Painel de Contratos</h1>
+          <p>Iguape/SP</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span id="updatedLabel" class="updated-label"></span>
+        <button id="exportBtn" class="icon-button" type="button">
+          <i data-lucide="download"></i>
+          <span>CSV</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <aside class="filters" aria-label="Filtros do painel">
+        <div class="filter-header">
+          <h2>Filtros</h2>
+          <button id="clearFiltersBtn" class="ghost-button" type="button">
+            <i data-lucide="rotate-ccw"></i>
+            <span>Limpar</span>
+          </button>
+        </div>
+
+        <label class="field">
+          <span>Busca</span>
+          <div class="input-shell">
+            <i data-lucide="search"></i>
+            <input id="searchInput" type="search" placeholder="Objeto, empresa, contrato...">
+          </div>
+        </label>
+
+        <label class="field">
+          <span>Status</span>
+          <select id="statusFilter"></select>
+        </label>
+
+        <label class="field">
+          <span>Prazo</span>
+          <select id="prazoFilter">
+            <option value="todos">Todos</option>
+            <option value="vencido">Vencidos</option>
+            <option value="30">Até 30 dias</option>
+            <option value="90">31 a 90 dias</option>
+            <option value="futuro">Mais de 90 dias</option>
+            <option value="sem-data">Sem vencimento</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Modalidade</span>
+          <select id="modalidadeFilter"></select>
+        </label>
+
+        <label class="field">
+          <span>Gestor</span>
+          <select id="gestorFilter"></select>
+        </label>
+
+        <label class="field">
+          <span>Fiscal</span>
+          <select id="fiscalFilter"></select>
+        </label>
+
+        <label class="field">
+          <span>Ano de vencimento</span>
+          <select id="anoFilter"></select>
+        </label>
+      </aside>
+
+      <section class="workspace">
+        <section id="kpiGrid" class="kpi-grid" aria-label="Indicadores"></section>
+
+        <section class="analytics-grid">
+          <article class="panel chart-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Status dos contratos</h2>
+                <p id="statusChartHint"></p>
+              </div>
+              <i data-lucide="activity"></i>
+            </div>
+            <div class="chart-frame">
+              <canvas id="statusChart"></canvas>
+            </div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Valor por modalidade</h2>
+                <p id="modalidadeChartHint"></p>
+              </div>
+              <i data-lucide="bar-chart-3"></i>
+            </div>
+            <div class="chart-frame">
+              <canvas id="modalidadeChart"></canvas>
+            </div>
+          </article>
+
+          <article class="panel chart-panel wide">
+            <div class="panel-header">
+              <div>
+                <h2>Calendário de vencimentos</h2>
+                <p id="vencimentosChartHint"></p>
+              </div>
+              <i data-lucide="calendar-days"></i>
+            </div>
+            <div class="chart-frame">
+              <canvas id="vencimentosChart"></canvas>
+            </div>
+          </article>
+        </section>
+
+        <section class="operations-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Contratos críticos</h2>
+                <p id="criticalHint"></p>
+              </div>
+              <i data-lucide="alert-triangle"></i>
+            </div>
+            <ul id="criticalList" class="critical-list"></ul>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Responsáveis</h2>
+                <p id="responsaveisHint"></p>
+              </div>
+              <i data-lucide="users"></i>
+            </div>
+            <div id="responsaveisList" class="responsaveis-list"></div>
+          </article>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="table-toolbar">
+            <div>
+              <h2>Contratos</h2>
+              <p id="tableCount"></p>
+            </div>
+            <div id="activeFilters" class="active-filters"></div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th><button type="button" data-sort="id">ID</button></th>
+                  <th><button type="button" data-sort="objeto">Objeto</button></th>
+                  <th><button type="button" data-sort="empresa">Empresa</button></th>
+                  <th><button type="button" data-sort="modalidade">Modalidade</button></th>
+                  <th><button type="button" data-sort="valor">Valor</button></th>
+                  <th><button type="button" data-sort="dataVencimento">Vencimento</button></th>
+                  <th><button type="button" data-sort="status">Status</button></th>
+                  <th><button type="button" data-sort="gestor">Gestor</button></th>
+                  <th><button type="button" data-sort="fiscal">Fiscal</button></th>
+                </tr>
+              </thead>
+              <tbody id="contractsTable"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
