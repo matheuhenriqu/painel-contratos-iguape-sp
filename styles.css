@@ -1,17 +1,19 @@
 :root {
-  --bg: #f4f6f2;
+  --bg: #f3f6f2;
   --surface: #ffffff;
   --surface-2: #eef3ed;
   --ink: #22302d;
   --muted: #67726e;
   --line: #dbe2dc;
+  --line-strong: #c9d4cd;
   --green: #24715d;
   --teal: #16837a;
   --amber: #bd7619;
   --red: #b7443e;
   --plum: #70578e;
   --blue: #2f6f9f;
-  --shadow: 0 12px 32px rgba(34, 48, 45, 0.08);
+  --shadow: 0 14px 36px rgba(34, 48, 45, 0.08);
+  --shadow-soft: 0 8px 22px rgba(34, 48, 45, 0.06);
 }
 
 * {
@@ -21,13 +23,15 @@
 html {
   min-width: 320px;
   color: var(--ink);
-  background: var(--bg);
+  background: #fff;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0;
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #ffffff 0, #ffffff 88px, var(--bg) 360px);
 }
 
 button,
@@ -40,6 +44,13 @@ button {
   cursor: pointer;
 }
 
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(22, 131, 122, 0.24);
+  outline-offset: 2px;
+}
+
 .topbar {
   position: sticky;
   top: 0;
@@ -47,12 +58,13 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  min-height: 72px;
-  padding: 14px 28px;
+  gap: 20px;
+  min-height: 84px;
+  padding: 14px clamp(16px, 2.2vw, 34px);
   border-bottom: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(14px);
+  box-shadow: 0 1px 0 rgba(34, 48, 45, 0.02);
 }
 
 .brand,
@@ -73,9 +85,10 @@ button {
 
 .brand-logo {
   display: block;
-  width: 172px;
+  width: clamp(142px, 12vw, 172px);
   height: auto;
   max-height: 60px;
+  flex: 0 0 auto;
   object-fit: contain;
 }
 
@@ -89,8 +102,22 @@ button {
 }
 
 .brand h1 {
-  font-size: 1.1rem;
-  line-height: 1.2;
+  font-size: clamp(1.08rem, 0.55vw + 0.95rem, 1.35rem);
+  line-height: 1.1;
+}
+
+.brand-copy {
+  min-width: 0;
+}
+
+.brand-copy span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--green);
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .brand p,
@@ -108,6 +135,7 @@ button {
 .topbar-actions {
   justify-content: flex-end;
   gap: 12px;
+  flex: 0 0 auto;
 }
 
 .icon-button,
@@ -125,6 +153,7 @@ button {
   color: #fff;
   border: 1px solid var(--green);
   background: var(--green);
+  box-shadow: var(--shadow-soft);
 }
 
 .ghost-button {
@@ -136,25 +165,37 @@ button {
 
 .icon-button svg,
 .ghost-button svg,
-.panel-header svg {
+.panel-header svg,
+.filter-title-button svg {
   width: 18px;
   height: 18px;
 }
 
+.updated-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  white-space: nowrap;
+}
+
 .app-shell {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
-  gap: 24px;
-  width: min(1640px, 100%);
+  grid-template-columns: 292px minmax(0, 1fr);
+  gap: clamp(18px, 2vw, 28px);
+  width: min(1680px, 100%);
   margin: 0 auto;
-  padding: 24px 28px 40px;
+  padding: 24px clamp(16px, 2.2vw, 34px) 44px;
 }
 
 .filters {
   position: sticky;
   top: 96px;
   align-self: start;
-  padding: 18px;
+  padding: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
@@ -164,12 +205,29 @@ button {
 .filter-header {
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
-.filter-header h2 {
-  margin: 0;
+.filter-title-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0;
+  color: var(--ink);
+  border: 0;
+  background: transparent;
   font-size: 1rem;
+  font-weight: 850;
+}
+
+.filter-chevron {
+  display: none;
+  transition: transform 180ms ease;
+}
+
+.filter-body {
+  display: block;
 }
 
 .field {
@@ -189,10 +247,16 @@ button {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .field select {
   padding: 0 36px 0 10px;
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: var(--line-strong);
 }
 
 .input-shell {
@@ -215,13 +279,13 @@ button {
 
 .workspace {
   display: grid;
-  gap: 22px;
+  gap: clamp(16px, 1.8vw, 24px);
   min-width: 0;
 }
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -235,18 +299,19 @@ button {
 
 .kpi-card {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 44px minmax(0, 1fr);
   gap: 12px;
-  min-height: 104px;
+  min-height: 112px;
   padding: 16px;
+  align-items: start;
 }
 
 .kpi-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   color: #fff;
   border-radius: 8px;
 }
@@ -282,9 +347,10 @@ button {
 .kpi-card strong {
   display: block;
   margin-top: 6px;
-  overflow-wrap: anywhere;
-  font-size: clamp(1.25rem, 1.2vw + 0.8rem, 1.9rem);
+  overflow-wrap: normal;
+  font-size: clamp(1.45rem, 1vw + 0.92rem, 1.95rem);
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .kpi-card small {
@@ -307,7 +373,7 @@ button {
 
 .panel {
   min-width: 0;
-  padding: 18px;
+  padding: clamp(16px, 1.4vw, 20px);
 }
 
 .panel-header,
@@ -335,11 +401,11 @@ button {
 
 .chart-frame {
   position: relative;
-  min-height: 290px;
+  min-height: 300px;
 }
 
 .wide .chart-frame {
-  min-height: 330px;
+  min-height: 340px;
 }
 
 .critical-list {
@@ -361,6 +427,11 @@ button {
   border-left: 4px solid var(--amber);
   border-radius: 8px;
   background: #fff;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.critical-item:hover {
+  transform: translateY(-1px);
 }
 
 .critical-item.expired {
@@ -422,6 +493,13 @@ button {
   border-bottom: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.86rem;
+}
+
+.metric-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metric-row:last-child {
@@ -503,6 +581,7 @@ th button {
 td {
   color: var(--ink);
   font-size: 0.88rem;
+  line-height: 1.35;
 }
 
 td.muted,
@@ -590,6 +669,10 @@ td.muted,
     grid-column: 1 / -1;
   }
 
+  .filter-body {
+    display: contents;
+  }
+
   .kpi-grid {
     grid-template-columns: repeat(3, minmax(160px, 1fr));
   }
@@ -600,7 +683,8 @@ td.muted,
     position: static;
     align-items: flex-start;
     flex-direction: column;
-    padding: 16px;
+    gap: 12px;
+    padding: 14px 16px;
   }
 
   .topbar-actions {
@@ -609,29 +693,82 @@ td.muted,
   }
 
   .brand {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    flex-direction: row;
+    gap: 12px;
   }
 
   .brand-logo {
-    width: 160px;
+    width: 138px;
+    max-height: 50px;
+  }
+
+  .brand-copy span {
+    display: none;
+  }
+
+  .brand h1 {
+    font-size: 1rem;
   }
 
   .app-shell {
     padding: 16px;
   }
 
-  .filters,
+  .filters {
+    display: block;
+    padding: 14px;
+  }
+
+  .filter-header {
+    margin-bottom: 0;
+  }
+
+  .filter-title-button {
+    min-height: 38px;
+  }
+
+  .filter-chevron {
+    display: block;
+  }
+
+  .filter-body {
+    display: block;
+    margin-top: 14px;
+  }
+
+  .filters.is-collapsed .filter-body {
+    display: none;
+  }
+
+  .filters.is-collapsed .filter-chevron {
+    transform: rotate(-90deg);
+  }
+
   .analytics-grid,
-  .operations-grid,
-  .kpi-grid {
+  .operations-grid {
     grid-template-columns: 1fr;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .kpi-card {
+    grid-template-columns: 1fr;
+    min-height: 136px;
+    padding: 14px;
+  }
+
+  .kpi-icon {
+    width: 38px;
+    height: 38px;
   }
 
   .chart-frame,
   .wide .chart-frame {
-    min-height: 260px;
+    min-height: 280px;
   }
 
   .table-toolbar {
@@ -643,21 +780,173 @@ td.muted,
   }
 }
 
+@media (max-width: 720px) {
+  .table-panel {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .table-toolbar {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .table-scroll {
+    overflow: visible;
+  }
+
+  table,
+  tbody,
+  tr,
+  td {
+    display: block;
+    width: 100%;
+  }
+
+  table {
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  tr {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: var(--shadow-soft);
+  }
+
+  td {
+    display: grid;
+    grid-template-columns: minmax(82px, 31%) minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.86rem;
+  }
+
+  td:last-child {
+    border-bottom: 0;
+  }
+
+  td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 850;
+    text-transform: uppercase;
+  }
+
+  .object-cell {
+    max-width: none;
+    min-width: 0;
+  }
+
+  .object-cell strong {
+    grid-column: 2;
+    white-space: normal;
+  }
+
+  .object-cell span {
+    display: block;
+    grid-column: 2;
+  }
+
+  .date-cell br {
+    display: none;
+  }
+
+  .date-cell .muted {
+    grid-column: 2;
+    margin-top: 3px;
+  }
+
+  .status-badge {
+    justify-self: start;
+  }
+
+  .empty-state {
+    display: block;
+  }
+
+  .empty-state::before {
+    content: none;
+  }
+}
+
 @media (max-width: 520px) {
-  .brand h1 {
-    font-size: 1rem;
+  .topbar-actions {
+    align-items: stretch;
   }
 
   .updated-label {
-    max-width: 190px;
+    max-width: none;
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
-  .icon-button span,
-  .ghost-button span {
+  .icon-button span {
     display: none;
+  }
+
+  .icon-button {
+    flex: 0 0 44px;
+    min-width: 44px;
+  }
+
+  .ghost-button {
+    min-width: 42px;
   }
 
   .critical-item {
     grid-template-columns: 1fr;
+  }
+
+  .kpi-card strong {
+    font-size: 1.55rem;
+  }
+
+  .chart-frame,
+  .wide .chart-frame {
+    min-height: 255px;
+  }
+}
+
+@media (max-width: 380px) {
+  .brand-logo {
+    width: 124px;
+  }
+
+  .brand h1 {
+    font-size: 0.94rem;
+  }
+
+  .kpi-card {
+    min-height: 128px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

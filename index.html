@@ -16,15 +16,16 @@
   <body>
     <header class="topbar">
       <div class="brand">
-        <img class="brand-logo" src="assets/logo-prefeitura-iguape.png" alt="Prefeitura de Iguape">
-        <div>
-          <h1>Painel de Contratos</h1>
+        <img class="brand-logo" src="assets/logo-prefeitura-iguape.png" alt="Prefeitura de Iguape" decoding="async">
+        <div class="brand-copy">
+          <span>Prefeitura Municipal de Iguape</span>
+          <h1>Painel de Gestão de Contratos</h1>
           <p>Iguape/SP</p>
         </div>
       </div>
       <div class="topbar-actions">
         <span id="updatedLabel" class="updated-label"></span>
-        <button id="exportBtn" class="icon-button" type="button">
+        <button id="exportBtn" class="icon-button" type="button" aria-label="Exportar contratos filtrados em CSV">
           <i data-lucide="download"></i>
           <span>CSV</span>
         </button>
@@ -34,57 +35,63 @@
     <main class="app-shell">
       <aside class="filters" aria-label="Filtros do painel">
         <div class="filter-header">
-          <h2>Filtros</h2>
+          <button id="toggleFiltersBtn" class="filter-title-button" type="button" aria-expanded="true" aria-controls="filterBody">
+            <i data-lucide="sliders-horizontal"></i>
+            <span>Filtros</span>
+            <i class="filter-chevron" data-lucide="chevron-down"></i>
+          </button>
           <button id="clearFiltersBtn" class="ghost-button" type="button">
             <i data-lucide="rotate-ccw"></i>
             <span>Limpar</span>
           </button>
         </div>
 
-        <label class="field">
-          <span>Busca</span>
-          <div class="input-shell">
-            <i data-lucide="search"></i>
-            <input id="searchInput" type="search" placeholder="Objeto, empresa, contrato...">
-          </div>
-        </label>
+        <div id="filterBody" class="filter-body">
+          <label class="field">
+            <span>Busca</span>
+            <div class="input-shell">
+              <i data-lucide="search"></i>
+              <input id="searchInput" type="search" placeholder="Objeto, empresa, contrato...">
+            </div>
+          </label>
 
-        <label class="field">
-          <span>Status</span>
-          <select id="statusFilter"></select>
-        </label>
+          <label class="field">
+            <span>Status</span>
+            <select id="statusFilter"></select>
+          </label>
 
-        <label class="field">
-          <span>Prazo</span>
-          <select id="prazoFilter">
-            <option value="todos">Todos</option>
-            <option value="vencido">Vencidos</option>
-            <option value="30">Até 30 dias</option>
-            <option value="90">31 a 90 dias</option>
-            <option value="futuro">Mais de 90 dias</option>
-            <option value="sem-data">Sem vencimento</option>
-          </select>
-        </label>
+          <label class="field">
+            <span>Prazo</span>
+            <select id="prazoFilter">
+              <option value="todos">Todos</option>
+              <option value="vencido">Vencidos</option>
+              <option value="30">Até 30 dias</option>
+              <option value="90">31 a 90 dias</option>
+              <option value="futuro">Mais de 90 dias</option>
+              <option value="sem-data">Sem vencimento</option>
+            </select>
+          </label>
 
-        <label class="field">
-          <span>Modalidade</span>
-          <select id="modalidadeFilter"></select>
-        </label>
+          <label class="field">
+            <span>Modalidade</span>
+            <select id="modalidadeFilter"></select>
+          </label>
 
-        <label class="field">
-          <span>Gestor</span>
-          <select id="gestorFilter"></select>
-        </label>
+          <label class="field">
+            <span>Gestor</span>
+            <select id="gestorFilter"></select>
+          </label>
 
-        <label class="field">
-          <span>Fiscal</span>
-          <select id="fiscalFilter"></select>
-        </label>
+          <label class="field">
+            <span>Fiscal</span>
+            <select id="fiscalFilter"></select>
+          </label>
 
-        <label class="field">
-          <span>Ano de vencimento</span>
-          <select id="anoFilter"></select>
-        </label>
+          <label class="field">
+            <span>Ano de vencimento</span>
+            <select id="anoFilter"></select>
+          </label>
+        </div>
       </aside>
 
       <section class="workspace">

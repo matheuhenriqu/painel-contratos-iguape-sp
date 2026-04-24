@@ -10,6 +10,7 @@ Dashboard estática para acompanhamento dos contratos importados de `contratos.x
 - Lista de contratos críticos e visão de responsáveis.
 - Tabela ordenável com exportação CSV do recorte filtrado.
 - Logo e favicon baseados nos arquivos públicos do portal oficial da Prefeitura de Iguape.
+- Layout responsivo para desktop, tablet e iPhone, com filtros recolhíveis e cartões de contratos no mobile.
 
 ## Publicação
 

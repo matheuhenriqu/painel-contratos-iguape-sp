@@ -13,6 +13,7 @@ const state = {
 };
 
 const charts = {};
+let userToggledFilters = false;
 const closedStatuses = new Set(["encerrado", "finalizado", "fracassado", "nao assinou", "suspenso"]);
 
 const currency = new Intl.NumberFormat("pt-BR", {
@@ -27,6 +28,8 @@ const monthFormat = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-
 
 const elements = {
   updatedLabel: document.querySelector("#updatedLabel"),
+  filters: document.querySelector(".filters"),
+  toggleFiltersBtn: document.querySelector("#toggleFiltersBtn"),
   kpiGrid: document.querySelector("#kpiGrid"),
   statusFilter: document.querySelector("#statusFilter"),
   modalidadeFilter: document.querySelector("#modalidadeFilter"),
@@ -77,6 +80,7 @@ const records = sourceData.records.map((record) => {
 
 function init() {
   hydrateFilters();
+  configureFilterPanel();
   bindEvents();
   render();
   if (window.lucide) {
@@ -104,6 +108,20 @@ function hydrateFilters() {
 }
 
 function bindEvents() {
+  elements.toggleFiltersBtn.addEventListener("click", () => {
+    userToggledFilters = true;
+    setFiltersCollapsed(!elements.filters.classList.contains("is-collapsed"));
+  });
+
+  window.matchMedia("(max-width: 820px)").addEventListener("change", (event) => {
+    if (!event.matches) {
+      userToggledFilters = false;
+      setFiltersCollapsed(false);
+      return;
+    }
+    if (!userToggledFilters) setFiltersCollapsed(true);
+  });
+
   elements.searchInput.addEventListener("input", (event) => {
     state.search = normalizeText(event.target.value);
     render();
@@ -341,23 +359,32 @@ function renderTable(rows) {
 
   elements.table.innerHTML = rows.map((item) => `
     <tr>
-      <td>${escapeHtml(item.id ?? "")}</td>
-      <td class="object-cell">
+      <td data-label="ID">${escapeHtml(item.id ?? "")}</td>
+      <td class="object-cell" data-label="Objeto">
         <strong>${escapeHtml(item.objeto || "Sem objeto")}</strong>
         <span>${escapeHtml(item.contrato || "Sem contrato")} · Processo ${escapeHtml(item.processo || "sem processo")}</span>
       </td>
-      <td>${escapeHtml(item.empresa || "Sem empresa")}</td>
-      <td>${escapeHtml(item.modalidade || "Sem modalidade")}</td>
-      <td class="money-cell">${currency.format(item.valor || 0)}</td>
-      <td class="date-cell">
+      <td data-label="Empresa">${escapeHtml(item.empresa || "Sem empresa")}</td>
+      <td data-label="Modalidade">${escapeHtml(item.modalidade || "Sem modalidade")}</td>
+      <td class="money-cell" data-label="Valor">${currency.format(item.valor || 0)}</td>
+      <td class="date-cell" data-label="Vencimento">
         ${formatDate(item.dataVencimentoDate)}
         <br><span class="muted">${formatDays(item.diasAtual)}</span>
       </td>
-      <td><span class="status-badge ${statusClass(item.status)}">${escapeHtml(item.status || "Sem status")}</span></td>
-      <td class="${item.gestor ? "" : "muted"}">${escapeHtml(item.gestor || "Sem gestor")}</td>
-      <td class="${item.fiscal ? "" : "muted"}">${escapeHtml(item.fiscal || "Sem fiscal")}</td>
+      <td data-label="Status"><span class="status-badge ${statusClass(item.status)}">${escapeHtml(item.status || "Sem status")}</span></td>
+      <td data-label="Gestor" class="${item.gestor ? "" : "muted"}">${escapeHtml(item.gestor || "Sem gestor")}</td>
+      <td data-label="Fiscal" class="${item.fiscal ? "" : "muted"}">${escapeHtml(item.fiscal || "Sem fiscal")}</td>
     </tr>
   `).join("");
+}
+
+function configureFilterPanel() {
+  setFiltersCollapsed(isSmallViewport());
+}
+
+function setFiltersCollapsed(collapsed) {
+  elements.filters.classList.toggle("is-collapsed", collapsed);
+  elements.toggleFiltersBtn.setAttribute("aria-expanded", String(!collapsed));
 }
 
 function sortRows(rows) {
@@ -478,9 +505,22 @@ function monthlyDeadlines(rows) {
 }
 
 function compactCurrency(value) {
-  if (Math.abs(value) >= 1_000_000) return `R$ ${(value / 1_000_000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mi`;
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) {
+    const digits = abs >= 100_000_000 ? 0 : 1;
+    return `R$ ${(value / 1_000_000).toLocaleString("pt-BR", { maximumFractionDigits: digits })} mi`;
+  }
   if (Math.abs(value) >= 1_000) return `R$ ${(value / 1_000).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} mil`;
   return currency.format(value);
+}
+
+function isSmallViewport() {
+  return window.matchMedia("(max-width: 720px)").matches;
+}
+
+function shortLabel(label, length = 22) {
+  const text = String(label || "");
+  return text.length > length ? `${text.slice(0, length - 1)}…` : text;
 }
 
 function chartColors(length) {
@@ -496,8 +536,18 @@ function upsertChart(id, config) {
 }
 
 function commonPlugins() {
+  const small = isSmallViewport();
   return {
-    legend: { position: "bottom", labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true } },
+    legend: {
+      position: "bottom",
+      labels: {
+        boxWidth: 10,
+        boxHeight: 10,
+        padding: small ? 10 : 14,
+        usePointStyle: true,
+        font: { size: small ? 10 : 12 },
+      },
+    },
     tooltip: {
       callbacks: {
         label(context) {
@@ -520,6 +570,7 @@ function doughnutOptions() {
 }
 
 function horizontalBarOptions(currencyAxis = false) {
+  const small = isSmallViewport();
   return {
     indexAxis: "y",
     responsive: true,
@@ -533,6 +584,11 @@ function horizontalBarOptions(currencyAxis = false) {
         grid: { color: "#edf1ed" },
       },
       y: {
+        ticks: {
+          callback(value) {
+            return shortLabel(this.getLabelForValue(value), small ? 18 : 28);
+          },
+        },
         grid: { display: false },
       },
     },
@@ -540,6 +596,7 @@ function horizontalBarOptions(currencyAxis = false) {
 }
 
 function deadlineOptions() {
+  const small = isSmallViewport();
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -551,12 +608,20 @@ function deadlineOptions() {
         grid: { color: "#edf1ed" },
       },
       y1: {
+        display: !small,
         beginAtZero: true,
         position: "right",
         ticks: { callback: (value) => compactCurrency(Number(value)) },
         grid: { drawOnChartArea: false },
       },
       x: {
+        ticks: {
+          maxRotation: small ? 0 : 45,
+          callback(value, index) {
+            if (small && index % 2) return "";
+            return this.getLabelForValue(value);
+          },
+        },
         grid: { display: false },
       },
     },
