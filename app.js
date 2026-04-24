@@ -5,8 +5,9 @@ const defaultSort = {
 };
 const pageSize = {
   desktop: 80,
-  mobile: 30,
+  mobile: 18,
 };
+const compactStorageKey = "contratosIguapeCompactRows";
 
 const state = {
   search: "",
@@ -19,10 +20,13 @@ const state = {
   sortKey: defaultSort.key,
   sortDir: defaultSort.dir,
   visibleLimit: pageSize.desktop,
+  compactRows: false,
 };
 
 const charts = {};
 let userToggledFilters = false;
+let searchRenderTimer = null;
+let scrollTicking = false;
 const closedStatuses = new Set(["concluido", "encerrado", "finalizado", "fracassado", "nao assinou", "suspenso"]);
 
 const currency = new Intl.NumberFormat("pt-BR", {
@@ -38,6 +42,7 @@ const elements = {
   filters: document.querySelector(".filters"),
   toggleFiltersBtn: document.querySelector("#toggleFiltersBtn"),
   quickFilterButtons: [...document.querySelectorAll("[data-quick-filter]")],
+  filterCountBadge: document.querySelector("#filterCountBadge"),
   kpiGrid: document.querySelector("#kpiGrid"),
   insightGrid: document.querySelector("#insightGrid"),
   statusFilter: document.querySelector("#statusFilter"),
@@ -47,6 +52,7 @@ const elements = {
   prazoFilter: document.querySelector("#prazoFilter"),
   anoFilter: document.querySelector("#anoFilter"),
   searchInput: document.querySelector("#searchInput"),
+  clearSearchBtn: document.querySelector("#clearSearchBtn"),
   clearFiltersBtn: document.querySelector("#clearFiltersBtn"),
   table: document.querySelector("#contractsTable"),
   tableCount: document.querySelector("#tableCount"),
@@ -59,6 +65,9 @@ const elements = {
   sortField: document.querySelector("#sortField"),
   sortDirBtn: document.querySelector("#sortDirBtn"),
   sortDirLabel: document.querySelector("#sortDirLabel"),
+  densityBtn: document.querySelector("#densityBtn"),
+  sectionToggleButtons: [...document.querySelectorAll("[data-section-toggle]")],
+  backToTopBtn: document.querySelector("#backToTopBtn"),
   statusChartHint: document.querySelector("#statusChartHint"),
   modalidadeChartHint: document.querySelector("#modalidadeChartHint"),
 };
@@ -90,6 +99,8 @@ const records = sourceData.records.map((record) => {
 });
 
 function init() {
+  state.compactRows = getStoredCompactRows();
+  applyDensityMode();
   resetVisibleLimit();
   hydrateFilters();
   configureFilterPanel();
@@ -135,7 +146,18 @@ function bindEvents() {
   elements.searchInput.addEventListener("input", (event) => {
     state.search = normalizeText(event.target.value);
     resetVisibleLimit();
+    updateSearchClearButton();
+    updateFilterControls();
+    queueRender();
+  });
+
+  elements.clearSearchBtn.addEventListener("click", () => {
+    state.search = "";
+    elements.searchInput.value = "";
+    resetVisibleLimit();
+    updateSearchClearButton();
     render();
+    elements.searchInput.focus();
   });
 
   elements.quickFilterButtons.forEach((button) => {
@@ -170,6 +192,12 @@ function bindEvents() {
     state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
     resetVisibleLimit();
     render();
+  });
+
+  elements.densityBtn.addEventListener("click", () => {
+    state.compactRows = !state.compactRows;
+    storeCompactRows(state.compactRows);
+    applyDensityMode();
   });
 
   elements.activeFilters.addEventListener("click", (event) => {
@@ -209,8 +237,19 @@ function bindEvents() {
     elements.fiscalFilter.value = "todos";
     elements.prazoFilter.value = "todos";
     elements.anoFilter.value = "todos";
+    updateSearchClearButton();
     render();
   });
+
+  elements.sectionToggleButtons.forEach((button) => {
+    button.addEventListener("click", () => toggleSection(button));
+  });
+
+  elements.backToTopBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: isReducedMotion() ? "auto" : "smooth" });
+  });
+
+  window.addEventListener("scroll", scheduleBackToTopUpdate, { passive: true });
 
   document.querySelectorAll("[data-sort]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -237,10 +276,20 @@ function render() {
   renderCharts(filtered);
   renderQuickFilterIndicators();
   renderActiveFilters();
+  updateFilterControls();
   renderTable(currentRows);
   renderSectionTable(elements.expiredTable, elements.expiredTableCount, expiredRows, "vencido(s)", "Nenhum contrato vencido no recorte atual.");
   renderSectionTable(elements.completedTable, elements.completedTableCount, completedRows, "concluído(s)", "Nenhum contrato concluído no recorte atual.");
   renderSortIndicators();
+  window.__CONTRATOS_IGUAPE_STATE__ = {
+    total: records.length,
+    filtered: filtered.length,
+    current: currentRows.length,
+    expired: expiredRows.length,
+    completed: completedRows.length,
+    sortKey: state.sortKey,
+    sortDir: state.sortDir,
+  };
   if (window.lucide) {
     window.lucide.createIcons();
   }
@@ -382,6 +431,29 @@ function renderActiveFilters() {
   `).join("");
 }
 
+function updateFilterControls() {
+  const count = getActiveFilterCount();
+  elements.filterCountBadge.hidden = count === 0;
+  elements.filterCountBadge.textContent = count ? numberFormat.format(count) : "";
+  elements.clearFiltersBtn.disabled = !hasActiveAdjustments();
+}
+
+function getActiveFilterCount() {
+  return [
+    state.search,
+    state.status !== "todos",
+    state.prazo !== "todos",
+    state.modalidade !== "todos",
+    state.gestor !== "todos",
+    state.fiscal !== "todos",
+    state.ano !== "todos",
+  ].filter(Boolean).length;
+}
+
+function hasActiveAdjustments() {
+  return getActiveFilterCount() > 0 || state.sortKey !== defaultSort.key || state.sortDir !== defaultSort.dir;
+}
+
 function applyQuickFilter(filter) {
   const values = {
     status: "todos",
@@ -450,7 +522,7 @@ function renderSectionTable(table, countElement, rows, label, emptyMessage) {
 
 function renderRows(rows) {
   return rows.map((item) => `
-    <tr>
+    <tr class="${deadlineRowClass(item)}">
       <td data-label="ID">${escapeHtml(item.id ?? "")}</td>
       <td class="object-cell" data-label="Objeto">
         <strong>${escapeHtml(item.objeto || "Sem objeto")}</strong>
@@ -461,7 +533,7 @@ function renderRows(rows) {
       <td class="money-cell" data-label="Valor">${currency.format(item.valor || 0)}</td>
       <td class="date-cell" data-label="Vencimento">
         ${formatDate(item.dataVencimentoDate)}
-        <br><span class="muted">${formatContractTiming(item)}</span>
+        <br><span class="timing-pill ${timingClass(item)}">${escapeHtml(formatContractTiming(item))}</span>
       </td>
       <td data-label="Status"><span class="status-badge ${statusClass(item.status)}">${escapeHtml(item.status || "Sem status")}</span></td>
       <td data-label="Gestor" class="${item.gestor ? "" : "muted"}">${escapeHtml(item.gestor || "Sem gestor")}</td>
@@ -556,6 +628,28 @@ function syncSortControls() {
   elements.sortField.value = state.sortKey;
   elements.sortDirLabel.textContent = state.sortDir === "asc" ? "Crescente" : "Decrescente";
   elements.sortDirBtn.classList.toggle("is-desc", state.sortDir === "desc");
+}
+
+function applyDensityMode() {
+  document.body.classList.toggle("is-compact", state.compactRows);
+  elements.densityBtn.setAttribute("aria-pressed", String(state.compactRows));
+  elements.densityBtn.classList.toggle("is-active", state.compactRows);
+}
+
+function getStoredCompactRows() {
+  try {
+    return localStorage.getItem(compactStorageKey) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function storeCompactRows(value) {
+  try {
+    localStorage.setItem(compactStorageKey, String(value));
+  } catch {
+    // The view still works when browser storage is unavailable.
+  }
 }
 
 function formatTableCount(shown, filteredTotal, label = "contratos") {
@@ -654,14 +748,34 @@ function formatUpdatedAt(value, withSeconds = false) {
 
 function formatDays(days) {
   if (days === null || Number.isNaN(days)) return "sem prazo";
-  if (days < 0) return `${Math.abs(days)} dia(s) vencido`;
+  if (days < 0) return `vencido há ${formatDayCount(Math.abs(days))}`;
   if (days === 0) return "vence hoje";
-  return `${days} dia(s)`;
+  return `vence em ${formatDayCount(days)}`;
 }
 
 function formatContractTiming(item) {
   if (item.isClosed) return `status ${String(item.status || "fechado").toLowerCase()}`;
   return formatDays(item.diasAtual);
+}
+
+function formatDayCount(days) {
+  return days === 1 ? "1 dia" : `${days} dias`;
+}
+
+function deadlineRowClass(item) {
+  if (item.isClosed) return "row-closed";
+  if (item.diasAtual === null) return "row-no-date";
+  if (item.diasAtual < 0) return "row-expired";
+  if (item.diasAtual <= 30) return "row-due-soon";
+  return "row-current";
+}
+
+function timingClass(item) {
+  if (item.isClosed) return "timing-closed";
+  if (item.diasAtual === null) return "timing-neutral";
+  if (item.diasAtual < 0) return "timing-danger";
+  if (item.diasAtual <= 30) return "timing-warning";
+  return "timing-ok";
 }
 
 function statusClass(status) {
@@ -742,6 +856,11 @@ function commonPlugins() {
       },
     },
     tooltip: {
+      backgroundColor: "#172621",
+      titleColor: "#ffffff",
+      bodyColor: "#ffffff",
+      cornerRadius: 8,
+      displayColors: true,
       callbacks: {
         label(context) {
           const label = context.dataset.label || context.label || "";
@@ -759,6 +878,7 @@ function doughnutOptions() {
     maintainAspectRatio: false,
     cutout: "62%",
     plugins: commonPlugins(),
+    animation: chartAnimation(),
   };
 }
 
@@ -769,6 +889,7 @@ function horizontalBarOptions(currencyAxis = false) {
     responsive: true,
     maintainAspectRatio: false,
     plugins: commonPlugins(),
+    animation: chartAnimation(),
     scales: {
       x: {
         ticks: {
@@ -786,6 +907,46 @@ function horizontalBarOptions(currencyAxis = false) {
       },
     },
   };
+}
+
+function chartAnimation() {
+  return isReducedMotion() ? false : { duration: 650, easing: "easeOutQuart" };
+}
+
+function queueRender() {
+  window.clearTimeout(searchRenderTimer);
+  searchRenderTimer = window.setTimeout(render, 120);
+}
+
+function updateSearchClearButton() {
+  elements.clearSearchBtn.hidden = !elements.searchInput.value;
+}
+
+function toggleSection(button) {
+  const section = button.closest("[data-collapsible-section]");
+  const content = document.getElementById(button.getAttribute("aria-controls"));
+  if (!section || !content) return;
+  const collapsed = section.classList.toggle("is-section-collapsed");
+  content.hidden = collapsed;
+  button.setAttribute("aria-expanded", String(!collapsed));
+  button.setAttribute("aria-label", `${collapsed ? "Expandir" : "Recolher"} ${section.querySelector("h2")?.textContent || "seção"}`);
+}
+
+function scheduleBackToTopUpdate() {
+  if (scrollTicking) return;
+  scrollTicking = true;
+  window.requestAnimationFrame(() => {
+    updateBackToTopButton();
+    scrollTicking = false;
+  });
+}
+
+function updateBackToTopButton() {
+  elements.backToTopBtn.hidden = window.scrollY < Math.max(520, window.innerHeight * 0.75);
+}
+
+function isReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function escapeHtml(value) {
