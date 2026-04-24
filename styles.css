@@ -545,9 +545,7 @@ select:focus-visible {
   font-size: 0.78rem;
 }
 
-.analytics-grid,
-.operations-grid,
-.status-sections {
+.analytics-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
@@ -594,140 +592,6 @@ select:focus-visible {
   min-height: 340px;
 }
 
-.critical-list {
-  display: grid;
-  gap: 10px;
-  min-width: 0;
-  max-height: 390px;
-  margin: 0;
-  padding: 0;
-  overflow: auto;
-  list-style: none;
-}
-
-.status-contract-list {
-  display: grid;
-  gap: 10px;
-  min-width: 0;
-  max-height: 520px;
-  overflow: auto;
-  padding-right: 2px;
-}
-
-.status-contract-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px 12px;
-  min-width: 0;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--green);
-  border-radius: 8px;
-  background: #fff;
-  transition: transform 160ms ease, border-color 160ms ease;
-}
-
-.status-contract-card.expired {
-  border-left-color: var(--red);
-}
-
-.status-contract-card:hover {
-  transform: translateY(-1px);
-}
-
-.status-contract-main {
-  min-width: 0;
-}
-
-.status-contract-main strong {
-  display: block;
-  overflow: hidden;
-  margin-bottom: 4px;
-  font-size: 0.92rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.status-contract-main span,
-.status-contract-meta {
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.status-contract-meta {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.status-contract-meta span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.status-contract-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  align-self: start;
-  min-height: 26px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  color: #fff;
-  background: var(--green);
-  font-size: 0.78rem;
-  font-weight: 850;
-  white-space: nowrap;
-}
-
-.status-contract-badge.expired {
-  background: var(--red);
-}
-
-.critical-item {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-  min-width: 0;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--amber);
-  border-radius: 8px;
-  background: #fff;
-  transition: border-color 160ms ease, transform 160ms ease;
-}
-
-.critical-item:hover {
-  transform: translateY(-1px);
-}
-
-.critical-item.expired {
-  border-left-color: var(--red);
-}
-
-.critical-item > div {
-  min-width: 0;
-}
-
-.critical-item strong {
-  display: block;
-  overflow: hidden;
-  font-size: 0.92rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.critical-item span,
-.critical-item small {
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.critical-badge,
 .status-badge,
 .filter-chip {
   display: inline-flex;
@@ -738,65 +602,6 @@ select:focus-visible {
   font-size: 0.78rem;
   font-weight: 800;
   white-space: nowrap;
-}
-
-.critical-badge {
-  align-self: start;
-  justify-self: start;
-  padding: 4px 9px;
-  color: #fff;
-  background: var(--amber);
-}
-
-.critical-item .critical-badge {
-  color: #fff;
-}
-
-.critical-badge.expired {
-  background: var(--red);
-}
-
-.responsaveis-list {
-  display: grid;
-  gap: 16px;
-  min-width: 0;
-}
-
-.metric-group,
-.metric-row {
-  min-width: 0;
-}
-
-.metric-group h3 {
-  margin: 0 0 10px;
-  font-size: 0.88rem;
-}
-
-.metric-row {
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  min-height: 34px;
-  border-bottom: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 0.86rem;
-}
-
-.metric-row span {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.metric-row:last-child {
-  border-bottom: 0;
-}
-
-.metric-row strong {
-  flex: 0 0 auto;
-  color: var(--ink);
 }
 
 .table-panel {
@@ -1197,9 +1002,7 @@ td.muted,
     display: none;
   }
 
-  .analytics-grid,
-  .operations-grid,
-  .status-sections {
+  .analytics-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1390,28 +1193,6 @@ td.muted,
 
   .ghost-button {
     min-width: 42px;
-  }
-
-  .critical-item {
-    grid-template-columns: 1fr;
-  }
-
-  .status-contract-card {
-    grid-template-columns: 1fr;
-  }
-
-  .status-contract-list {
-    max-height: none;
-    overflow: visible;
-    padding-right: 0;
-  }
-
-  .status-contract-meta {
-    grid-template-columns: 1fr;
-  }
-
-  .status-contract-badge {
-    justify-self: start;
   }
 
   .kpi-card strong {

@@ -40,7 +40,6 @@ const elements = {
   filters: document.querySelector(".filters"),
   toggleFiltersBtn: document.querySelector("#toggleFiltersBtn"),
   quickFilterButtons: [...document.querySelectorAll("[data-quick-filter]")],
-  sectionFilterButtons: [...document.querySelectorAll("[data-section-filter]")],
   kpiGrid: document.querySelector("#kpiGrid"),
   insightGrid: document.querySelector("#insightGrid"),
   statusFilter: document.querySelector("#statusFilter"),
@@ -58,14 +57,6 @@ const elements = {
   sortField: document.querySelector("#sortField"),
   sortDirBtn: document.querySelector("#sortDirBtn"),
   sortDirLabel: document.querySelector("#sortDirLabel"),
-  criticalList: document.querySelector("#criticalList"),
-  criticalHint: document.querySelector("#criticalHint"),
-  responsaveisList: document.querySelector("#responsaveisList"),
-  responsaveisHint: document.querySelector("#responsaveisHint"),
-  activeContractsList: document.querySelector("#activeContractsList"),
-  activeContractsHint: document.querySelector("#activeContractsHint"),
-  expiredContractsList: document.querySelector("#expiredContractsList"),
-  expiredContractsHint: document.querySelector("#expiredContractsHint"),
   statusChartHint: document.querySelector("#statusChartHint"),
   modalidadeChartHint: document.querySelector("#modalidadeChartHint"),
   vencimentosChartHint: document.querySelector("#vencimentosChartHint"),
@@ -149,13 +140,6 @@ function bindEvents() {
   elements.quickFilterButtons.forEach((button) => {
     button.addEventListener("click", () => {
       applyQuickFilter(button.dataset.quickFilter);
-    });
-  });
-
-  elements.sectionFilterButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      applyQuickFilter(button.dataset.sectionFilter);
-      document.querySelector(".table-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   });
 
@@ -248,9 +232,6 @@ function render() {
   renderKpis(filtered);
   renderInsights(filtered);
   renderCharts(filtered);
-  renderCritical(filtered);
-  renderResponsaveis(filtered);
-  renderStatusSections(filtered);
   renderQuickFilterIndicators();
   renderActiveFilters();
   renderTable(sorted);
@@ -390,108 +371,6 @@ function renderCharts(rows) {
     },
     options: deadlineOptions(),
   });
-}
-
-function renderCritical(rows) {
-  const critical = rows
-    .filter((item) => !item.isClosed && item.diasAtual !== null && item.diasAtual <= 30)
-    .sort((a, b) => a.diasAtual - b.diasAtual)
-    .slice(0, 8);
-
-  elements.criticalHint.textContent = `${numberFormat.format(critical.length)} prioridade(s) no recorte atual`;
-
-  if (!critical.length) {
-    elements.criticalList.innerHTML = `<li class="empty-state">Nenhum contrato crítico no recorte atual.</li>`;
-    return;
-  }
-
-  elements.criticalList.innerHTML = critical.map((item) => {
-    const expired = item.diasAtual < 0;
-    return `
-      <li class="critical-item ${expired ? "expired" : ""}">
-        <div>
-          <strong title="${escapeHtml(item.objeto || "")}">${escapeHtml(item.objeto || "Sem objeto")}</strong>
-          <span>${escapeHtml(item.contrato || "Sem contrato")} · ${escapeHtml(item.empresa || "Sem empresa")}</span>
-          <small>${formatDate(item.dataVencimentoDate)} · ${currency.format(item.valor || 0)}</small>
-        </div>
-        <span class="critical-badge ${expired ? "expired" : ""}">${expired ? `${Math.abs(item.diasAtual)}d vencido` : `${item.diasAtual}d`}</span>
-      </li>
-    `;
-  }).join("");
-}
-
-function renderResponsaveis(rows) {
-  const semGestor = rows.filter((item) => !item.gestor).length;
-  const semFiscal = rows.filter((item) => !item.fiscal).length;
-  elements.responsaveisHint.textContent = `${numberFormat.format(semGestor)} sem gestor · ${numberFormat.format(semFiscal)} sem fiscal`;
-
-  const gestorCounts = countBy(rows.filter((item) => item.gestor), (item) => item.gestor);
-  const fiscalCounts = countBy(rows.filter((item) => item.fiscal), (item) => item.fiscal);
-  const gestores = gestorCounts.labels.map((label, index) => ({ label, value: gestorCounts.values[index] })).slice(0, 5);
-  const fiscais = fiscalCounts.labels.map((label, index) => ({ label, value: fiscalCounts.values[index] })).slice(0, 5);
-
-  elements.responsaveisList.innerHTML = `
-    ${renderMetricGroup("Gestores", gestores)}
-    ${renderMetricGroup("Fiscais", fiscais)}
-  `;
-}
-
-function renderStatusSections(rows) {
-  const activeRows = sortByDueDateAsc(rows.filter((item) => normalizeText(item.status) === "ativo"));
-  const expiredRows = sortByDueDateAsc(rows.filter((item) => !item.isClosed && item.diasAtual !== null && item.diasAtual < 0));
-
-  elements.activeContractsHint.textContent = formatSectionHint(activeRows.length, "ativo(s)");
-  elements.expiredContractsHint.textContent = formatSectionHint(expiredRows.length, "vencido(s) não encerrado(s)");
-  elements.activeContractsList.innerHTML = renderStatusContractList(activeRows, "active");
-  elements.expiredContractsList.innerHTML = renderStatusContractList(expiredRows, "expired");
-}
-
-function formatSectionHint(count, label) {
-  const prefix = `${numberFormat.format(count)} ${label}`;
-  return count > 10 ? `${prefix} · 10 primeiros por vencimento` : `${prefix} no recorte atual`;
-}
-
-function renderStatusContractList(rows, variant) {
-  if (!rows.length) {
-    const message = variant === "active"
-      ? "Nenhum contrato ativo no recorte atual."
-      : "Nenhum contrato vencido no recorte atual.";
-    return `<div class="empty-state">${message}</div>`;
-  }
-
-  return rows.slice(0, 10).map((item) => `
-    <article class="status-contract-card ${variant}">
-      <div class="status-contract-main">
-        <strong title="${escapeHtml(item.objeto || "")}">${escapeHtml(item.objeto || "Sem objeto")}</strong>
-        <span>${escapeHtml(item.contrato || "Sem contrato")} · ${escapeHtml(item.empresa || "Sem empresa")}</span>
-      </div>
-      <div class="status-contract-meta">
-        <span>${formatDate(item.dataVencimentoDate)}</span>
-        <span>${currency.format(item.valor || 0)}</span>
-        <span>${escapeHtml(item.gestor || "Sem gestor")}</span>
-      </div>
-      <span class="status-contract-badge ${variant}">
-        ${variant === "expired" ? `${Math.abs(item.diasAtual || 0)}d vencido` : formatDays(item.diasAtual)}
-      </span>
-    </article>
-  `).join("");
-}
-
-function renderMetricGroup(title, data) {
-  if (!data.length) {
-    return `<div class="metric-group"><h3>${title}</h3><div class="empty-state">Sem registros no recorte atual.</div></div>`;
-  }
-  return `
-    <div class="metric-group">
-      <h3>${title}</h3>
-      ${data.map((item) => `
-        <div class="metric-row">
-          <span>${escapeHtml(item.label)}</span>
-          <strong>${numberFormat.format(item.value)}</strong>
-        </div>
-      `).join("")}
-    </div>
-  `;
 }
 
 function renderActiveFilters() {
