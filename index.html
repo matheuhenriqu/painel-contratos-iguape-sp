@@ -4,12 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Painel de gestão de contratos de Iguape/SP">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
     <title>Painel de Contratos - Iguape/SP</title>
     <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="assets/vendor/chart.umd.min.js" defer></script>
+    <script src="assets/vendor/lucide.min.js" defer></script>
     <script src="data/contratos.js" defer></script>
     <script src="app.js" defer></script>
   </head>
@@ -50,6 +52,17 @@
               <input id="searchInput" type="search" placeholder="Objeto, empresa, contrato...">
             </div>
           </label>
+
+          <div class="field quick-filter-field">
+            <span>Recorte rápido</span>
+            <div class="quick-filter-group" role="group" aria-label="Recortes rápidos">
+              <button class="quick-filter-button" type="button" data-quick-filter="todos">Todos</button>
+              <button class="quick-filter-button" type="button" data-quick-filter="ativos">Ativos</button>
+              <button class="quick-filter-button" type="button" data-quick-filter="vencidos">Vencidos</button>
+              <button class="quick-filter-button" type="button" data-quick-filter="30">30 dias</button>
+            </div>
+            <p class="status-note">Vencido: prazo expirado e contrato ainda aberto. Encerrado: contrato fechado na planilha.</p>
+          </div>
 
           <label class="field">
             <span>Status</span>
@@ -92,6 +105,7 @@
 
       <section class="workspace">
         <section id="kpiGrid" class="kpi-grid" aria-label="Indicadores"></section>
+        <section id="insightGrid" class="insight-grid" aria-label="Leituras rápidas"></section>
 
         <section class="analytics-grid">
           <article class="panel chart-panel">
@@ -165,7 +179,10 @@
                 <h2>Contratos ativos</h2>
                 <p id="activeContractsHint"></p>
               </div>
-              <i data-lucide="check-circle-2"></i>
+              <button class="mini-action-button" type="button" data-section-filter="ativos">
+                <i data-lucide="list-filter"></i>
+                <span>Ver todos</span>
+              </button>
             </div>
             <div id="activeContractsList" class="status-contract-list"></div>
           </article>
@@ -176,7 +193,10 @@
                 <h2>Contratos vencidos</h2>
                 <p id="expiredContractsHint"></p>
               </div>
-              <i data-lucide="circle-alert"></i>
+              <button class="mini-action-button danger" type="button" data-section-filter="vencidos">
+                <i data-lucide="list-filter"></i>
+                <span>Ver todos</span>
+              </button>
             </div>
             <div id="expiredContractsList" class="status-contract-list"></div>
           </article>

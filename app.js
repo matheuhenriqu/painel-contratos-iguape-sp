@@ -34,7 +34,10 @@ const elements = {
   updatedLabel: document.querySelector("#updatedLabel"),
   filters: document.querySelector(".filters"),
   toggleFiltersBtn: document.querySelector("#toggleFiltersBtn"),
+  quickFilterButtons: [...document.querySelectorAll("[data-quick-filter]")],
+  sectionFilterButtons: [...document.querySelectorAll("[data-section-filter]")],
   kpiGrid: document.querySelector("#kpiGrid"),
+  insightGrid: document.querySelector("#insightGrid"),
   statusFilter: document.querySelector("#statusFilter"),
   modalidadeFilter: document.querySelector("#modalidadeFilter"),
   gestorFilter: document.querySelector("#gestorFilter"),
@@ -132,6 +135,19 @@ function bindEvents() {
     render();
   });
 
+  elements.quickFilterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      applyQuickFilter(button.dataset.quickFilter);
+    });
+  });
+
+  elements.sectionFilterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      applyQuickFilter(button.dataset.sectionFilter);
+      document.querySelector(".table-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+
   [
     ["status", elements.statusFilter],
     ["modalidade", elements.modalidadeFilter],
@@ -186,10 +202,12 @@ function render() {
   const filtered = getFilteredRows();
   const sorted = sortRows(filtered);
   renderKpis(filtered);
+  renderInsights(filtered);
   renderCharts(filtered);
   renderCritical(filtered);
   renderResponsaveis(filtered);
   renderStatusSections(filtered);
+  renderQuickFilterIndicators();
   renderActiveFilters();
   renderTable(sorted);
   renderSortIndicators();
@@ -205,7 +223,7 @@ function getFilteredRows() {
     if (state.modalidade !== "todos" && (item.modalidade || "Sem modalidade") !== state.modalidade) return false;
     if (state.gestor !== "todos" && (item.gestor || "Sem gestor") !== state.gestor) return false;
     if (state.fiscal !== "todos" && (item.fiscal || "Sem fiscal") !== state.fiscal) return false;
-    if (state.prazo !== "todos" && item.prazoBucket !== state.prazo) return false;
+    if (state.prazo !== "todos" && !matchesPrazoFilter(item)) return false;
     if (state.ano !== "todos" && item.anoVencimento !== state.ano) return false;
     return true;
   });
@@ -233,6 +251,57 @@ function renderKpis(rows) {
         <span>${card.label}</span>
         <strong>${card.value}</strong>
         <small>${card.note}</small>
+      </div>
+    </article>
+  `).join("");
+}
+
+function renderInsights(rows) {
+  const openRows = rows.filter((item) => !item.isClosed);
+  const nextDue = sortByDueDateAsc(openRows.filter((item) => item.dataVencimentoDate && item.diasAtual !== null && item.diasAtual >= 0))[0];
+  const highestValue = [...rows].sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0))[0];
+  const missingResponsibles = rows.filter((item) => !item.gestor || !item.fiscal);
+  const expiredRows = rows.filter((item) => !item.isClosed && item.diasAtual !== null && item.diasAtual < 0);
+  const expiredValue = sum(expiredRows, "valor");
+
+  const cards = [
+    {
+      label: "Próximo vencimento",
+      value: nextDue ? formatDate(nextDue.dataVencimentoDate) : "Sem prazo",
+      note: nextDue ? `${nextDue.objeto || "Sem objeto"} · ${formatDays(nextDue.diasAtual)}` : "Nenhum contrato aberto no recorte",
+      icon: "calendar-clock",
+      tone: "amber",
+    },
+    {
+      label: "Maior contrato",
+      value: highestValue ? compactCurrency(highestValue.valor || 0) : "R$ 0",
+      note: highestValue ? `${highestValue.objeto || "Sem objeto"} · ${highestValue.empresa || "Sem empresa"}` : "Sem contratos no recorte",
+      icon: "badge-dollar-sign",
+      tone: "blue",
+    },
+    {
+      label: "Sem gestor/fiscal",
+      value: numberFormat.format(missingResponsibles.length),
+      note: "cadastro incompleto no recorte atual",
+      icon: "user-round-x",
+      tone: "plum",
+    },
+    {
+      label: "Valor vencido",
+      value: compactCurrency(expiredValue),
+      note: `${numberFormat.format(expiredRows.length)} contrato(s) não encerrado(s)`,
+      icon: "shield-alert",
+      tone: "red",
+    },
+  ];
+
+  elements.insightGrid.innerHTML = cards.map((card) => `
+    <article class="insight-card ${card.tone}">
+      <span class="insight-icon" aria-hidden="true"><i data-lucide="${card.icon}"></i></span>
+      <div>
+        <span>${escapeHtml(card.label)}</span>
+        <strong>${escapeHtml(card.value)}</strong>
+        <small title="${escapeHtml(card.note)}">${escapeHtml(card.note)}</small>
       </div>
     </article>
   `).join("");
@@ -393,6 +462,45 @@ function renderActiveFilters() {
   elements.activeFilters.innerHTML = chips.map((chip) => `<span class="filter-chip">${escapeHtml(chip)}</span>`).join("");
 }
 
+function applyQuickFilter(filter) {
+  const values = {
+    status: "todos",
+    prazo: "todos",
+  };
+
+  if (filter === "ativos") values.status = "Ativo";
+  if (filter === "vencidos") values.prazo = "vencido";
+  if (filter === "30") values.prazo = "30";
+
+  state.status = values.status;
+  state.prazo = values.prazo;
+  elements.statusFilter.value = values.status;
+  elements.prazoFilter.value = values.prazo;
+  render();
+}
+
+function renderQuickFilterIndicators() {
+  const current = getCurrentQuickFilter();
+  elements.quickFilterButtons.forEach((button) => {
+    const active = button.dataset.quickFilter === current;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function getCurrentQuickFilter() {
+  if (state.status === "Ativo" && state.prazo === "todos") return "ativos";
+  if (state.status === "todos" && state.prazo === "vencido") return "vencidos";
+  if (state.status === "todos" && state.prazo === "30") return "30";
+  if (state.status === "todos" && state.prazo === "todos") return "todos";
+  return "";
+}
+
+function matchesPrazoFilter(item) {
+  if (state.prazo === "sem-data") return item.prazoBucket === "sem-data";
+  return !item.isClosed && item.prazoBucket === state.prazo;
+}
+
 function renderTable(rows) {
   elements.tableCount.textContent = `Mostrando ${numberFormat.format(rows.length)} de ${numberFormat.format(records.length)} contratos`;
 
@@ -413,7 +521,7 @@ function renderTable(rows) {
       <td class="money-cell" data-label="Valor">${currency.format(item.valor || 0)}</td>
       <td class="date-cell" data-label="Vencimento">
         ${formatDate(item.dataVencimentoDate)}
-        <br><span class="muted">${formatDays(item.diasAtual)}</span>
+        <br><span class="muted">${formatContractTiming(item)}</span>
       </td>
       <td data-label="Status"><span class="status-badge ${statusClass(item.status)}">${escapeHtml(item.status || "Sem status")}</span></td>
       <td data-label="Gestor" class="${item.gestor ? "" : "muted"}">${escapeHtml(item.gestor || "Sem gestor")}</td>
@@ -539,6 +647,11 @@ function formatDays(days) {
   if (days < 0) return `${Math.abs(days)} dia(s) vencido`;
   if (days === 0) return "vence hoje";
   return `${days} dia(s)`;
+}
+
+function formatContractTiming(item) {
+  if (item.isClosed) return `status ${String(item.status || "fechado").toLowerCase()}`;
+  return formatDays(item.diasAtual);
 }
 
 function statusClass(status) {
