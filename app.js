@@ -1,4 +1,8 @@
 const sourceData = window.CONTRATOS_DATA || { records: [], generatedAt: null };
+const defaultSort = {
+  key: "dataVencimento",
+  dir: "asc",
+};
 
 const state = {
   search: "",
@@ -8,8 +12,8 @@ const state = {
   fiscal: "todos",
   prazo: "todos",
   ano: "todos",
-  sortKey: "dataVencimento",
-  sortDir: "asc",
+  sortKey: defaultSort.key,
+  sortDir: defaultSort.dir,
 };
 
 const charts = {};
@@ -150,8 +154,8 @@ function bindEvents() {
       fiscal: "todos",
       prazo: "todos",
       ano: "todos",
-      sortKey: "dataVencimento",
-      sortDir: "asc",
+      sortKey: defaultSort.key,
+      sortDir: defaultSort.dir,
     });
     elements.searchInput.value = "";
     elements.statusFilter.value = "todos";
@@ -190,6 +194,7 @@ function render() {
   renderResponsaveis(filtered);
   renderActiveFilters();
   renderTable(sorted);
+  renderSortIndicators();
   if (window.lucide) {
     window.lucide.createIcons();
   }
@@ -391,16 +396,33 @@ function sortRows(rows) {
   const sorted = [...rows];
   const dir = state.sortDir === "asc" ? 1 : -1;
   sorted.sort((a, b) => {
+    if (state.sortKey === "dataVencimento") {
+      const aMissing = !a.dataVencimentoDate;
+      const bMissing = !b.dataVencimentoDate;
+      if (aMissing && bMissing) return Number(a.id || 0) - Number(b.id || 0);
+      if (aMissing) return 1;
+      if (bMissing) return -1;
+      const result = a.dataVencimentoDate.getTime() - b.dataVencimentoDate.getTime();
+      return result === 0 ? Number(a.id || 0) - Number(b.id || 0) : result * dir;
+    }
+
     let av = a[state.sortKey];
     let bv = b[state.sortKey];
-    if (state.sortKey === "dataVencimento") {
-      av = a.dataVencimentoDate ? a.dataVencimentoDate.getTime() : Number.POSITIVE_INFINITY;
-      bv = b.dataVencimentoDate ? b.dataVencimentoDate.getTime() : Number.POSITIVE_INFINITY;
-    }
     if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
     return String(av || "").localeCompare(String(bv || ""), "pt-BR", { sensitivity: "base" }) * dir;
   });
   return sorted;
+}
+
+function renderSortIndicators() {
+  document.querySelectorAll("[data-sort]").forEach((button) => {
+    const label = button.dataset.label || button.textContent.trim().replace(/[↑↓]$/, "").trim();
+    button.dataset.label = label;
+    const active = button.dataset.sort === state.sortKey;
+    button.classList.toggle("is-sorted", active);
+    button.textContent = active ? `${label} ${state.sortDir === "asc" ? "↑" : "↓"}` : label;
+    button.setAttribute("aria-sort", active ? (state.sortDir === "asc" ? "ascending" : "descending") : "none");
+  });
 }
 
 function fillSelect(select, allLabel, options) {

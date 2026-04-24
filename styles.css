@@ -578,6 +578,10 @@ th button {
   text-transform: inherit;
 }
 
+th button.is-sorted {
+  color: var(--green);
+}
+
 td {
   color: var(--ink);
   font-size: 0.88rem;
