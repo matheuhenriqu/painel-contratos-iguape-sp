@@ -85,10 +85,11 @@
             <select id="prazoFilter">
               <option value="todos">Todos</option>
               <option value="vencido">Vencidos</option>
+              <option value="hoje">Vence hoje</option>
               <option value="30">Até 30 dias</option>
               <option value="90">31 a 90 dias</option>
               <option value="futuro">Mais de 90 dias</option>
-              <option value="sem-data">Sem vencimento</option>
+              <option value="sem-data">Sem data de vencimento</option>
             </select>
           </label>
 
@@ -167,13 +168,13 @@
             <span>Consulta detalhada</span>
             <h2>Relação de contratos</h2>
           </div>
-          <p>Contratos vigentes aparecem primeiro, em ordem crescente de vencimento.</p>
+          <p>Contratos abertos aparecem primeiro, com status de prazo e pendências cadastrais destacados.</p>
         </div>
 
         <section class="panel table-panel">
           <div class="table-toolbar">
             <div class="table-title">
-              <h2>Contratos vigentes</h2>
+              <h2>Contratos vigentes e em acompanhamento</h2>
               <p id="tableCount" aria-live="polite"></p>
             </div>
             <div class="table-controls" aria-label="Ordenação da tabela">
@@ -264,10 +265,10 @@
           <article id="completedContractsSection" class="panel table-panel grouped-table-panel" data-collapsible-section>
             <div class="table-toolbar">
               <div class="table-title">
-                <h2>Contratos concluídos</h2>
+                <h2>Contratos encerrados e concluídos</h2>
                 <p id="completedTableCount" aria-live="polite"></p>
               </div>
-              <button class="section-toggle-button" type="button" data-section-toggle aria-expanded="true" aria-controls="completedContractsContent" aria-label="Recolher contratos concluídos">
+              <button class="section-toggle-button" type="button" data-section-toggle aria-expanded="true" aria-controls="completedContractsContent" aria-label="Recolher contratos encerrados e concluídos">
                 <i data-lucide="chevron-down"></i>
               </button>
             </div>

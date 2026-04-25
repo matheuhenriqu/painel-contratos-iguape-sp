@@ -21,6 +21,22 @@ const URL_PARAM_KEYS = {
   compactRows: "compacto",
 };
 const SORT_KEYS = new Set(["id", "contrato", "processo", "objeto", "empresa", "modalidade", "valor", "dataVencimento", "status", "gestor", "fiscal"]);
+const COMPLETED_STATUS_SLUGS = new Set(["concluido", "finalizado"]);
+const CLOSED_STATUS_SLUGS = new Set(["encerrado", "fracassado", "nao assinou", "suspenso"]);
+const INSUFFICIENT_STATUS_SLUGS = new Set(["indefinido", "sem informacao", "sem status"]);
+const FIELD_FALLBACKS = {
+  contrato: "Sem contrato informado",
+  processo: "Sem processo informado",
+  objeto: "Sem objeto informado",
+  empresa: "Sem empresa informada",
+  modalidade: "Sem modalidade informada",
+  gestor: "Sem gestor informado",
+  fiscal: "Sem fiscal informado",
+  valor: "Sem valor informado",
+  dataVencimento: "Sem data de vencimento",
+  status: "Sem status informado",
+  informacao: "Sem informação suficiente",
+};
 const collator = new Intl.Collator("pt-BR", {
   numeric: true,
   sensitivity: "base",
@@ -54,7 +70,6 @@ const charts = {};
 let userToggledFilters = false;
 let searchRenderTimer = null;
 let scrollTicking = false;
-const closedStatuses = new Set(["concluido", "encerrado", "finalizado", "fracassado", "nao assinou", "suspenso"]);
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -106,18 +121,22 @@ const today = startOfDay(new Date());
 
 const records = sourceData.records.map((record) => {
   const dataVencimento = parseDate(record.dataVencimento);
-  const diasAtual = dataVencimento ? Math.ceil((dataVencimento - today) / MS_PER_DAY) : null;
-  const normalized = buildSearchIndex(record);
+  const diasAtual = calculateDaysUntil(dataVencimento);
+  const businessStatus = classifyContract(record, dataVencimento, diasAtual);
+  const display = buildDisplayFields(record, dataVencimento, businessStatus);
+  const normalized = buildSearchIndex(record, display, businessStatus);
   return {
     ...record,
+    display,
+    businessStatus,
     normalized,
     normalizedCompact: compactSearchText(normalized),
     dataVencimentoDate: dataVencimento,
     dataInicioDate: parseDate(record.dataInicio),
     diasAtual,
-    prazoBucket: getPrazoBucket(diasAtual),
-    anoVencimento: dataVencimento ? String(dataVencimento.getUTCFullYear()) : "Sem data",
-    isClosed: closedStatuses.has(normalizeText(record.status)),
+    prazoBucket: businessStatus.prazoBucket,
+    anoVencimento: dataVencimento ? String(dataVencimento.getUTCFullYear()) : FIELD_FALLBACKS.dataVencimento,
+    isClosed: businessStatus.group === "closed",
   };
 });
 
@@ -136,13 +155,13 @@ function init() {
 }
 
 function hydrateFilters() {
-  fillSelect(elements.statusFilter, "Todos", unique(records.map((item) => item.status || "Sem status")));
-  fillSelect(elements.modalidadeFilter, "Todas", unique(records.map((item) => item.modalidade || "Sem modalidade")));
-  fillSelect(elements.gestorFilter, "Todos", unique(records.map((item) => item.gestor || "Sem gestor")));
-  fillSelect(elements.fiscalFilter, "Todos", unique(records.map((item) => item.fiscal || "Sem fiscal")));
+  fillSelect(elements.statusFilter, "Todos", unique(records.map((item) => item.businessStatus.label)));
+  fillSelect(elements.modalidadeFilter, "Todas", unique(records.map((item) => item.display.modalidade)));
+  fillSelect(elements.gestorFilter, "Todos", unique(records.map((item) => item.display.gestor)));
+  fillSelect(elements.fiscalFilter, "Todos", unique(records.map((item) => item.display.fiscal)));
   const years = unique(records.map((item) => item.anoVencimento)).sort((a, b) => {
-    if (a === "Sem data") return 1;
-    if (b === "Sem data") return -1;
+    if (a === FIELD_FALLBACKS.dataVencimento) return 1;
+    if (b === FIELD_FALLBACKS.dataVencimento) return -1;
     return Number(a) - Number(b);
   });
   fillSelect(elements.anoFilter, "Todos", years);
@@ -316,7 +335,7 @@ function render(options = {}) {
   updateFilterControls();
   renderTable(currentRows);
   renderSectionTable(elements.expiredTable, elements.expiredTableCount, expiredRows, "vencido(s)", "Nenhum contrato vencido no recorte atual.");
-  renderSectionTable(elements.completedTable, elements.completedTableCount, completedRows, "concluído(s)", "Nenhum contrato concluído no recorte atual.");
+  renderSectionTable(elements.completedTable, elements.completedTableCount, completedRows, "encerrado(s)/concluído(s)", "Nenhum contrato encerrado ou concluído no recorte atual.");
   renderSortIndicators();
   window.__CONTRATOS_IGUAPE_STATE__ = {
     total: records.length,
@@ -337,10 +356,10 @@ function getFilteredRows() {
   const searchTerms = getSearchTerms(state.search);
   return records.filter((item) => {
     if (searchTerms.length && !matchesSearchTerms(item, searchTerms)) return false;
-    if (state.status !== SELECT_ALL && (item.status || "Sem status") !== state.status) return false;
-    if (state.modalidade !== SELECT_ALL && (item.modalidade || "Sem modalidade") !== state.modalidade) return false;
-    if (state.gestor !== SELECT_ALL && (item.gestor || "Sem gestor") !== state.gestor) return false;
-    if (state.fiscal !== SELECT_ALL && (item.fiscal || "Sem fiscal") !== state.fiscal) return false;
+    if (state.status !== SELECT_ALL && item.businessStatus.label !== state.status) return false;
+    if (state.modalidade !== SELECT_ALL && item.display.modalidade !== state.modalidade) return false;
+    if (state.gestor !== SELECT_ALL && item.display.gestor !== state.gestor) return false;
+    if (state.fiscal !== SELECT_ALL && item.display.fiscal !== state.fiscal) return false;
     if (state.prazo !== SELECT_ALL && !matchesPrazoFilter(item)) return false;
     if (state.ano !== SELECT_ALL && item.anoVencimento !== state.ano) return false;
     return true;
@@ -349,15 +368,15 @@ function getFilteredRows() {
 
 function renderKpis(rows) {
   const totalValue = sum(rows, "valor");
-  const activeCount = rows.filter((item) => normalizeText(item.status) === "ativo").length;
-  const vencidos = rows.filter((item) => !item.isClosed && item.diasAtual !== null && item.diasAtual < 0).length;
-  const vence30 = rows.filter((item) => !item.isClosed && item.diasAtual !== null && item.diasAtual >= 0 && item.diasAtual <= 30).length;
-  const semResponsavel = rows.filter((item) => !item.gestor || !item.fiscal).length;
+  const activeCount = rows.filter((item) => item.businessStatus.key === "vigente").length;
+  const vencidos = rows.filter((item) => item.businessStatus.key === "vencido").length;
+  const vence30 = rows.filter((item) => item.businessStatus.prazoBucket === "30").length;
+  const semResponsavel = rows.filter((item) => item.display.isMissing.gestor || item.display.isMissing.fiscal).length;
 
   const cards = [
     { label: "Contratos", value: numberFormat.format(rows.length), note: `${numberFormat.format(records.length)} na base`, icon: "file-text", color: "green" },
-    { label: "Valor total", value: compactCurrency(totalValue), note: currency.format(totalValue), icon: "wallet", color: "teal" },
-    { label: "Ativos", value: numberFormat.format(activeCount), note: "status cadastral ativo", icon: "check-circle-2", color: "plum" },
+    { label: "Valor total", value: compactCurrency(totalValue), note: formatCurrency(totalValue), icon: "wallet", color: "teal" },
+    { label: "Vigentes", value: numberFormat.format(activeCount), note: "prazo regular acima de 90 dias", icon: "check-circle-2", color: "plum" },
     { label: "Vencidos", value: numberFormat.format(vencidos), note: "contratos não encerrados", icon: "circle-alert", color: "red" },
     { label: "Até 30 dias", value: numberFormat.format(vence30), note: `${numberFormat.format(semResponsavel)} sem gestor/fiscal`, icon: "clock-3", color: "amber" },
   ];
@@ -377,23 +396,23 @@ function renderKpis(rows) {
 function renderInsights(rows) {
   const openRows = rows.filter((item) => !item.isClosed);
   const nextDue = sortByDueDateAsc(openRows.filter((item) => item.dataVencimentoDate && item.diasAtual !== null && item.diasAtual >= 0))[0];
-  const highestValue = [...rows].sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0))[0];
-  const missingResponsibles = rows.filter((item) => !item.gestor || !item.fiscal);
-  const expiredRows = rows.filter((item) => !item.isClosed && item.diasAtual !== null && item.diasAtual < 0);
+  const highestValue = [...rows].sort((a, b) => (toFiniteNumber(b.valor) || 0) - (toFiniteNumber(a.valor) || 0))[0];
+  const missingResponsibles = rows.filter((item) => item.display.isMissing.gestor || item.display.isMissing.fiscal);
+  const expiredRows = rows.filter((item) => item.businessStatus.key === "vencido");
   const expiredValue = sum(expiredRows, "valor");
 
   const cards = [
     {
       label: "Próximo vencimento",
-      value: nextDue ? formatDate(nextDue.dataVencimentoDate) : "Sem prazo",
-      note: nextDue ? `${nextDue.objeto || "Sem objeto"} · ${formatDays(nextDue.diasAtual)}` : "Nenhum contrato aberto no recorte",
+      value: nextDue ? formatDate(nextDue.dataVencimentoDate) : FIELD_FALLBACKS.dataVencimento,
+      note: nextDue ? `${nextDue.display.objeto} · ${formatDays(nextDue.diasAtual)}` : "Nenhum contrato aberto no recorte",
       icon: "calendar-clock",
       tone: "amber",
     },
     {
       label: "Maior contrato",
-      value: highestValue ? compactCurrency(highestValue.valor || 0) : "R$ 0",
-      note: highestValue ? `${highestValue.objeto || "Sem objeto"} · ${highestValue.empresa || "Sem empresa"}` : "Sem contratos no recorte",
+      value: highestValue ? compactCurrency(highestValue.valor) : "R$ 0",
+      note: highestValue ? `${highestValue.display.objeto} · ${highestValue.display.empresa}` : "Sem contratos no recorte",
       icon: "badge-dollar-sign",
       tone: "blue",
     },
@@ -428,7 +447,7 @@ function renderInsights(rows) {
 function renderCharts(rows) {
   if (!window.Chart) return;
 
-  const statusData = countBy(rows, (item) => item.status || "Sem status");
+  const statusData = countBy(rows, (item) => item.businessStatus.label);
   elements.statusChartHint.textContent = `${statusData.labels.length} status visíveis`;
   upsertChart("statusChart", {
     type: "doughnut",
@@ -439,7 +458,7 @@ function renderCharts(rows) {
     options: doughnutOptions(),
   });
 
-  const modalidadeData = sumBy(rows, (item) => item.modalidade || "Sem modalidade", (item) => item.valor)
+  const modalidadeData = sumBy(rows, (item) => item.display.modalidade, (item) => item.valor)
     .slice(0, 8);
   elements.modalidadeChartHint.textContent = `${modalidadeData.length} modalidades com maior valor`;
   upsertChart("modalidadeChart", {
@@ -474,9 +493,9 @@ function renderResultSummary(filteredTotal, currentTotal, expiredTotal, complete
   const prefix = getActiveFilterCount() ? "resultado(s) encontrado(s)" : "contrato(s) na base";
   elements.resultSummary.textContent = [
     `${numberFormat.format(filteredTotal)} ${prefix}`,
-    `${numberFormat.format(currentTotal)} vigente(s)`,
+    `${numberFormat.format(currentTotal)} em acompanhamento`,
     `${numberFormat.format(expiredTotal)} vencido(s)`,
-    `${numberFormat.format(completedTotal)} concluído(s)`,
+    `${numberFormat.format(completedTotal)} encerrado(s)/concluído(s)`,
   ].join(" · ");
 }
 
@@ -509,7 +528,7 @@ function applyQuickFilter(filter) {
     prazo: SELECT_ALL,
   };
 
-  if (filter === "ativos") values.status = "Ativo";
+  if (filter === "ativos") values.status = "Vigente";
   if (filter === "vencidos") values.prazo = "vencido";
   if (filter === "30") values.prazo = "30";
 
@@ -531,7 +550,7 @@ function renderQuickFilterIndicators() {
 }
 
 function getCurrentQuickFilter() {
-  if (state.status === "Ativo" && state.prazo === SELECT_ALL) return "ativos";
+  if (state.status === "Vigente" && state.prazo === SELECT_ALL) return "ativos";
   if (state.status === SELECT_ALL && state.prazo === "vencido") return "vencidos";
   if (state.status === SELECT_ALL && state.prazo === "30") return "30";
   if (state.status === SELECT_ALL && state.prazo === SELECT_ALL) return SELECT_ALL;
@@ -539,14 +558,14 @@ function getCurrentQuickFilter() {
 }
 
 function matchesPrazoFilter(item) {
-  if (state.prazo === "sem-data") return item.prazoBucket === "sem-data";
-  return !item.isClosed && item.prazoBucket === state.prazo;
+  if (item.isClosed) return false;
+  return item.businessStatus.prazoBucket === state.prazo;
 }
 
 function renderTable(rows) {
   const visibleRows = rows.slice(0, state.visibleLimit);
   const shown = visibleRows.length;
-  elements.tableCount.textContent = formatTableCount(shown, rows.length, "vigentes");
+  elements.tableCount.textContent = formatTableCount(shown, rows.length, "em acompanhamento");
 
   if (!rows.length) {
     elements.table.innerHTML = renderEmptyRow("Nenhum contrato encontrado.");
@@ -571,25 +590,48 @@ function renderSectionTable(table, countElement, rows, label, emptyMessage) {
 
 function renderRows(rows) {
   return rows.map((item) => `
-    <tr class="${escapeAttr(deadlineRowClass(item))}">
+    <tr class="${escapeAttr(rowClassNames(item))}">
       <td data-label="ID">${escapeHtml(item.id ?? "")}</td>
-      <td data-label="Contrato">${escapeHtml(item.contrato || "Sem contrato")}</td>
-      <td data-label="Processo">${escapeHtml(item.processo || "Sem processo")}</td>
+      <td data-label="Contrato" class="${escapeAttr(fieldCellClass(item, "contrato"))}"><span class="reference-code">${escapeHtml(item.display.contrato)}</span></td>
+      <td data-label="Processo" class="${escapeAttr(fieldCellClass(item, "processo"))}"><span class="reference-code">${escapeHtml(item.display.processo)}</span></td>
       <td class="object-cell" data-label="Objeto">
-        <strong>${escapeHtml(item.objeto || "Sem objeto")}</strong>
+        <strong>${escapeHtml(item.display.objeto)}</strong>
       </td>
-      <td data-label="Empresa">${escapeHtml(item.empresa || "Sem empresa")}</td>
-      <td data-label="Modalidade">${escapeHtml(item.modalidade || "Sem modalidade")}</td>
-      <td class="money-cell" data-label="Valor">${currency.format(item.valor || 0)}</td>
-      <td class="date-cell" data-label="Vencimento">
-        ${formatDate(item.dataVencimentoDate)}
-        <br><span class="timing-pill ${escapeAttr(timingClass(item))}">${escapeHtml(formatContractTiming(item))}</span>
+      <td data-label="Empresa" class="${escapeAttr(fieldCellClass(item, "empresa"))}">${escapeHtml(item.display.empresa)}</td>
+      <td data-label="Modalidade" class="${escapeAttr(fieldCellClass(item, "modalidade"))}">${escapeHtml(item.display.modalidade)}</td>
+      <td class="money-cell ${escapeAttr(fieldCellClass(item, "valor"))}" data-label="Valor">${escapeHtml(item.display.valor)}</td>
+      <td class="date-cell ${escapeAttr(fieldCellClass(item, "dataVencimento"))}" data-label="Vencimento">
+        ${escapeHtml(item.display.dataVencimento)}
+        <br><span class="timing-pill ${escapeAttr(timingClass(item))}">${escapeHtml(item.businessStatus.timingLabel)}</span>
       </td>
-      <td data-label="Status"><span class="status-badge ${escapeAttr(statusClass(item.status))}">${escapeHtml(item.status || "Sem status")}</span></td>
-      <td data-label="Gestor" class="${item.gestor ? "" : "muted"}">${escapeHtml(item.gestor || "Sem gestor")}</td>
-      <td data-label="Fiscal" class="${item.fiscal ? "" : "muted"}">${escapeHtml(item.fiscal || "Sem fiscal")}</td>
+      <td data-label="Status" class="status-cell">${renderStatusCell(item)}</td>
+      <td data-label="Gestor" class="${escapeAttr(fieldCellClass(item, "gestor"))}">${escapeHtml(item.display.gestor)}</td>
+      <td data-label="Fiscal" class="${escapeAttr(fieldCellClass(item, "fiscal"))}">${escapeHtml(item.display.fiscal)}</td>
     </tr>
   `).join("");
+}
+
+function renderStatusCell(item) {
+  const source = item.businessStatus.sourceLabel && normalizeText(item.businessStatus.sourceLabel) !== normalizeText(item.businessStatus.label)
+    ? `<small>Planilha: ${escapeHtml(item.businessStatus.sourceLabel)}</small>`
+    : "";
+
+  return `
+    <span class="status-badge ${escapeAttr(statusClass(item.businessStatus.key))}">${escapeHtml(item.businessStatus.label)}</span>
+    ${source}
+  `;
+}
+
+function rowClassNames(item) {
+  return [
+    item.businessStatus.rowClass,
+    item.display.isMissing.gestor ? "row-missing-gestor" : "",
+    item.display.isMissing.fiscal ? "row-missing-fiscal" : "",
+  ].filter(Boolean).join(" ");
+}
+
+function fieldCellClass(item, key) {
+  return item.display.isMissing[key] ? "muted missing-field" : "";
 }
 
 function configureFilterPanel() {
@@ -622,12 +664,18 @@ function compareRowsBySort(a, b, key, dir) {
   }
 
   if (key === "valor" || key === "id") {
-    const result = compareNullableValues(Number(a[key]), Number(b[key]), (av, bv) => av - bv);
+    const result = compareNullableValues(toFiniteNumber(a[key]), toFiniteNumber(b[key]), (av, bv) => av - bv);
     return result === 0 ? fallback : result * dir;
   }
 
-  const result = compareNullableValues(a[key], b[key], (av, bv) => collator.compare(String(av), String(bv)));
+  const result = compareNullableValues(getSortValue(a, key), getSortValue(b, key), (av, bv) => collator.compare(String(av), String(bv)));
   return result === 0 ? fallback : result * dir;
+}
+
+function getSortValue(item, key) {
+  if (key === "status") return item.businessStatus.label;
+  if (key === "modalidade" || key === "gestor" || key === "fiscal") return item.display[key];
+  return item[key];
 }
 
 function compareNullableValues(a, b, compare) {
@@ -675,15 +723,15 @@ function renderSortIndicators() {
 }
 
 function isCurrentContract(item) {
-  return !item.isClosed && (item.diasAtual === null || item.diasAtual >= 0);
+  return item.businessStatus.group === "current";
 }
 
 function isExpiredContract(item) {
-  return !item.isClosed && item.diasAtual !== null && item.diasAtual < 0;
+  return item.businessStatus.group === "expired";
 }
 
 function isCompletedContract(item) {
-  return item.isClosed;
+  return item.businessStatus.group === "closed";
 }
 
 function restoreStateFromUrl({ useStoredDensity }) {
@@ -863,19 +911,191 @@ function normalizeSourceData(data) {
   return data;
 }
 
-function buildSearchIndex(record) {
+function buildDisplayFields(record, dataVencimento, businessStatus) {
+  return {
+    contrato: getFieldText(record.contrato, FIELD_FALLBACKS.contrato),
+    processo: getFieldText(record.processo, FIELD_FALLBACKS.processo),
+    objeto: getFieldText(record.objeto, FIELD_FALLBACKS.objeto),
+    empresa: getFieldText(record.empresa, FIELD_FALLBACKS.empresa),
+    modalidade: getFieldText(record.modalidade, FIELD_FALLBACKS.modalidade),
+    gestor: getFieldText(record.gestor, FIELD_FALLBACKS.gestor),
+    fiscal: getFieldText(record.fiscal, FIELD_FALLBACKS.fiscal),
+    valor: formatCurrency(record.valor),
+    dataVencimento: formatDate(dataVencimento),
+    statusSource: getFieldText(record.status, FIELD_FALLBACKS.status),
+    status: businessStatus.label,
+    isMissing: {
+      contrato: isBlank(record.contrato),
+      processo: isBlank(record.processo),
+      objeto: isBlank(record.objeto),
+      empresa: isBlank(record.empresa),
+      modalidade: isBlank(record.modalidade),
+      gestor: isBlank(record.gestor),
+      fiscal: isBlank(record.fiscal),
+      valor: toFiniteNumber(record.valor) === null,
+      dataVencimento: !dataVencimento,
+      status: isBlank(record.status),
+    },
+  };
+}
+
+function classifyContract(record, dataVencimento, diasAtual) {
+  const sourceLabel = getFieldText(record.status, FIELD_FALLBACKS.status);
+  const statusSlug = normalizeText(record.status);
+
+  if (COMPLETED_STATUS_SLUGS.has(statusSlug)) {
+    return {
+      key: "concluido",
+      label: "Concluído",
+      sourceLabel,
+      group: "closed",
+      prazoBucket: "concluido",
+      rowClass: "row-closed",
+      tone: "closed",
+      timingLabel: "Contrato concluído",
+    };
+  }
+
+  if (CLOSED_STATUS_SLUGS.has(statusSlug)) {
+    return {
+      key: "encerrado",
+      label: "Encerrado",
+      sourceLabel,
+      group: "closed",
+      prazoBucket: "encerrado",
+      rowClass: "row-closed",
+      tone: "closed",
+      timingLabel: "Contrato encerrado",
+    };
+  }
+
+  if (INSUFFICIENT_STATUS_SLUGS.has(statusSlug)) {
+    return {
+      key: "sem-informacao",
+      label: FIELD_FALLBACKS.informacao,
+      sourceLabel,
+      group: "current",
+      prazoBucket: "insuficiente",
+      rowClass: "row-insufficient",
+      tone: "neutral",
+      timingLabel: FIELD_FALLBACKS.informacao,
+    };
+  }
+
+  if (!dataVencimento || diasAtual === null) {
+    return {
+      key: "sem-data",
+      label: FIELD_FALLBACKS.dataVencimento,
+      sourceLabel,
+      group: "current",
+      prazoBucket: "sem-data",
+      rowClass: "row-no-date",
+      tone: "neutral",
+      timingLabel: FIELD_FALLBACKS.dataVencimento,
+    };
+  }
+
+  if (diasAtual < 0) {
+    return {
+      key: "vencido",
+      label: "Vencido",
+      sourceLabel,
+      group: "expired",
+      prazoBucket: "vencido",
+      rowClass: "row-expired",
+      tone: "danger",
+      timingLabel: formatDays(diasAtual),
+    };
+  }
+
+  if (diasAtual === 0) {
+    return {
+      key: "vence-hoje",
+      label: "Vence hoje",
+      sourceLabel,
+      group: "current",
+      prazoBucket: "hoje",
+      rowClass: "row-due-today",
+      tone: "warning",
+      timingLabel: "vence hoje",
+    };
+  }
+
+  if (diasAtual <= 7) {
+    return {
+      key: "proximo-de-vencer",
+      label: "Próximo de vencer",
+      sourceLabel,
+      group: "current",
+      prazoBucket: "30",
+      rowClass: "row-due-soon",
+      tone: "warning",
+      timingLabel: formatDays(diasAtual),
+    };
+  }
+
+  if (diasAtual <= 30) {
+    return {
+      key: "vence-ate-30",
+      label: "Vence em até 30 dias",
+      sourceLabel,
+      group: "current",
+      prazoBucket: "30",
+      rowClass: "row-due-soon",
+      tone: "warning",
+      timingLabel: formatDays(diasAtual),
+    };
+  }
+
+  if (diasAtual <= 90) {
+    return {
+      key: "vence-31-90",
+      label: "Vence entre 31 e 90 dias",
+      sourceLabel,
+      group: "current",
+      prazoBucket: "90",
+      rowClass: "row-due-mid",
+      tone: "notice",
+      timingLabel: formatDays(diasAtual),
+    };
+  }
+
+  return {
+    key: "vigente",
+    label: "Vigente",
+    sourceLabel,
+    group: "current",
+    prazoBucket: "futuro",
+    rowClass: "row-current",
+    tone: "ok",
+    timingLabel: formatDays(diasAtual),
+  };
+}
+
+function buildSearchIndex(record, display, businessStatus) {
   return normalizeText([
-    record.objeto,
-    record.empresa,
-    record.contrato,
-    record.processo,
-    record.modalidade,
+    display.objeto,
+    display.empresa,
+    display.contrato,
+    display.processo,
+    display.modalidade,
+    display.gestor,
+    display.fiscal,
+    display.status,
     record.numeroModalidade,
-    record.gestor,
-    record.fiscal,
     record.observacoes,
     record.status,
+    businessStatus.label,
   ].join(" "));
+}
+
+function getFieldText(value, fallback) {
+  const text = String(value ?? "").trim();
+  return text || fallback;
+}
+
+function isBlank(value) {
+  return String(value ?? "").trim() === "";
 }
 
 function queryRequired(selector) {
@@ -910,7 +1130,7 @@ function unique(values) {
 }
 
 function normalizeText(value) {
-  return String(value || "")
+  return String(value ?? "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
@@ -934,25 +1154,29 @@ function matchesSearchTerms(item, terms) {
 
 function parseDate(value) {
   if (!value) return null;
-  const [year, month, day] = String(value).split("-").map(Number);
+  const match = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const [, yearText, monthText, dayText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
   if (!year || !month || !day) return null;
-  return new Date(Date.UTC(year, month - 1, day));
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
+  return date;
 }
 
 function startOfDay(date) {
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 }
 
-function getPrazoBucket(days) {
-  if (days === null || Number.isNaN(days)) return "sem-data";
-  if (days < 0) return "vencido";
-  if (days <= 30) return "30";
-  if (days <= 90) return "90";
-  return "futuro";
+function calculateDaysUntil(date, baseDate = today) {
+  if (!date) return null;
+  return Math.ceil((date - baseDate) / MS_PER_DAY);
 }
 
-function formatDate(date) {
-  return date ? dateFormat.format(date) : "Sem data";
+function formatDate(date, fallback = FIELD_FALLBACKS.dataVencimento) {
+  return date ? dateFormat.format(date) : fallback;
 }
 
 function formatUpdatedAt(value, withSeconds = false) {
@@ -970,15 +1194,14 @@ function formatUpdatedAt(value, withSeconds = false) {
 }
 
 function formatDays(days) {
-  if (days === null || Number.isNaN(days)) return "sem prazo";
+  if (days === null || Number.isNaN(days)) return FIELD_FALLBACKS.dataVencimento;
   if (days < 0) return `vencido há ${formatDayCount(Math.abs(days))}`;
   if (days === 0) return "vence hoje";
   return `vence em ${formatDayCount(days)}`;
 }
 
 function formatContractTiming(item) {
-  if (item.isClosed) return `status ${String(item.status || "fechado").toLowerCase()}`;
-  return formatDays(item.diasAtual);
+  return item.businessStatus.timingLabel;
 }
 
 function formatDayCount(days) {
@@ -986,19 +1209,11 @@ function formatDayCount(days) {
 }
 
 function deadlineRowClass(item) {
-  if (item.isClosed) return "row-closed";
-  if (item.diasAtual === null) return "row-no-date";
-  if (item.diasAtual < 0) return "row-expired";
-  if (item.diasAtual <= 30) return "row-due-soon";
-  return "row-current";
+  return item.businessStatus.rowClass;
 }
 
 function timingClass(item) {
-  if (item.isClosed) return "timing-closed";
-  if (item.diasAtual === null) return "timing-neutral";
-  if (item.diasAtual < 0) return "timing-danger";
-  if (item.diasAtual <= 30) return "timing-warning";
-  return "timing-ok";
+  return `timing-${item.businessStatus.tone}`;
 }
 
 function statusClass(status) {
@@ -1013,7 +1228,7 @@ function slugifyClassName(value) {
 }
 
 function sum(rows, key) {
-  return rows.reduce((total, item) => total + Number(item[key] || 0), 0);
+  return rows.reduce((total, item) => total + (toFiniteNumber(item[key]) || 0), 0);
 }
 
 function countBy(rows, accessor) {
@@ -1033,21 +1248,34 @@ function sumBy(rows, labelAccessor, valueAccessor) {
   const map = new Map();
   rows.forEach((item) => {
     const label = labelAccessor(item) || "Sem informação";
-    map.set(label, (map.get(label) || 0) + Number(valueAccessor(item) || 0));
+    map.set(label, (map.get(label) || 0) + (toFiniteNumber(valueAccessor(item)) || 0));
   });
   return [...map.entries()]
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => b.value - a.value);
 }
 
-function compactCurrency(value) {
-  const abs = Math.abs(value);
+function compactCurrency(value, fallback = FIELD_FALLBACKS.valor) {
+  const amount = toFiniteNumber(value);
+  if (amount === null) return fallback;
+  const abs = Math.abs(amount);
   if (abs >= 1_000_000) {
     const digits = abs >= 100_000_000 ? 0 : 1;
-    return `R$ ${(value / 1_000_000).toLocaleString("pt-BR", { maximumFractionDigits: digits })} mi`;
+    return `R$ ${(amount / 1_000_000).toLocaleString("pt-BR", { maximumFractionDigits: digits })} mi`;
   }
-  if (Math.abs(value) >= 1_000) return `R$ ${(value / 1_000).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} mil`;
-  return currency.format(value);
+  if (abs >= 1_000) return `R$ ${(amount / 1_000).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} mil`;
+  return currency.format(amount);
+}
+
+function formatCurrency(value, fallback = FIELD_FALLBACKS.valor) {
+  const amount = toFiniteNumber(value);
+  return amount === null ? fallback : currency.format(amount);
+}
+
+function toFiniteNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
 function isSmallViewport() {

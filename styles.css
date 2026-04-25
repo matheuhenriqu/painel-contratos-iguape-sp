@@ -1010,6 +1010,32 @@ td.muted,
   color: var(--muted);
 }
 
+.missing-field {
+  color: #7c6250;
+  background: #fffaf1;
+}
+
+.reference-code {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 2px 6px;
+  border: 1px solid #d8e4dd;
+  border-radius: 6px;
+  background: #f6faf8;
+  color: #233831;
+  font-size: 0.8rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.missing-field .reference-code {
+  border-color: #edd6b8;
+  background: #fff7e8;
+  color: #7a4c0f;
+}
+
 .object-cell {
   max-width: 300px;
   min-width: 210px;
@@ -1058,6 +1084,11 @@ td.muted,
   background: #fff1da;
 }
 
+.timing-notice {
+  color: #225f76;
+  background: #e6f4f8;
+}
+
 .timing-danger {
   color: #8d2f2a;
   background: #fde9e6;
@@ -1081,31 +1112,43 @@ td.muted,
   letter-spacing: 0;
 }
 
-.status-ativo {
+.status-cell {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+}
+
+.status-cell small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.status-vigente {
   background: var(--green);
 }
 
-.status-atencao,
-.status-vence-em-breve,
-.status-aguardando {
+.status-vence-hoje,
+.status-proximo-de-vencer,
+.status-vence-ate-30 {
   background: var(--amber);
 }
 
-.status-vencido,
-.status-suspenso,
-.status-nao-assinou {
+.status-vence-31-90 {
+  background: var(--blue);
+}
+
+.status-vencido {
   background: var(--red);
 }
 
 .status-encerrado,
-.status-finalizado,
-.status-fracassado {
+.status-concluido {
   background: #707a77;
 }
 
-.status-licitando,
-.status-em-andamento,
-.status-publicado {
+.status-sem-data,
+.status-sem-informacao {
   background: var(--plum);
 }
 
@@ -1121,12 +1164,30 @@ td.muted,
   box-shadow: inset 3px 0 0 var(--amber);
 }
 
+.contracts-table-body tr.row-due-today {
+  box-shadow: inset 3px 0 0 #d35f1f;
+}
+
+.contracts-table-body tr.row-due-mid {
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+
 .contracts-table-body tr.row-current {
   box-shadow: inset 3px 0 0 rgba(22, 102, 79, 0.18);
 }
 
+.contracts-table-body tr.row-no-date,
+.contracts-table-body tr.row-insufficient {
+  box-shadow: inset 3px 0 0 var(--plum);
+}
+
 .contracts-table-body tr.row-closed {
   box-shadow: inset 3px 0 0 rgba(99, 113, 108, 0.24);
+}
+
+.contracts-table-body tr.row-missing-gestor,
+.contracts-table-body tr.row-missing-fiscal {
+  background-image: linear-gradient(90deg, rgba(189, 118, 25, 0.06), transparent 42%);
 }
 
 @media (min-width: 821px) {
@@ -1586,8 +1647,21 @@ body.is-compact .timing-pill {
     box-shadow: inset 3px 0 0 var(--amber), var(--shadow-soft);
   }
 
+  .contracts-table-body tr.row-due-today {
+    box-shadow: inset 3px 0 0 #d35f1f, var(--shadow-soft);
+  }
+
+  .contracts-table-body tr.row-due-mid {
+    box-shadow: inset 3px 0 0 var(--blue), var(--shadow-soft);
+  }
+
   .contracts-table-body tr.row-current {
     box-shadow: inset 3px 0 0 rgba(22, 102, 79, 0.32), var(--shadow-soft);
+  }
+
+  .contracts-table-body tr.row-no-date,
+  .contracts-table-body tr.row-insufficient {
+    box-shadow: inset 3px 0 0 var(--plum), var(--shadow-soft);
   }
 
   .contracts-table-body tr.row-closed {
@@ -1641,6 +1715,11 @@ body.is-compact .timing-pill {
 
   .status-badge {
     justify-self: start;
+  }
+
+  .status-cell .status-badge,
+  .status-cell small {
+    grid-column: 2;
   }
 
   .empty-state {
