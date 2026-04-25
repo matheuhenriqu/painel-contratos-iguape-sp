@@ -19,6 +19,7 @@
     <script src="app.js" defer></script>
   </head>
   <body>
+    <a class="skip-link" href="#content">Ir para o conteúdo principal</a>
     <header class="topbar">
       <div class="brand">
         <span class="brand-logo-frame">
@@ -31,23 +32,24 @@
       </div>
       <div class="topbar-actions">
         <span class="updated-label">
-          <i data-lucide="database"></i>
+          <i aria-hidden="true" data-lucide="database"></i>
           <span id="updatedLabel"></span>
         </span>
       </div>
     </header>
 
-    <main class="app-shell">
-      <aside class="filters" aria-label="Filtros do painel">
+    <main id="content" class="app-shell" tabindex="-1">
+      <aside class="filters" aria-labelledby="filterTitle">
+        <h2 id="filterTitle" class="sr-only">Filtros de consulta</h2>
         <div class="filter-header">
           <button id="toggleFiltersBtn" class="filter-title-button" type="button" aria-expanded="true" aria-controls="filterBody">
-            <i data-lucide="sliders-horizontal"></i>
+            <i aria-hidden="true" data-lucide="sliders-horizontal"></i>
             <span id="filterToggleLabel">Filtros</span>
             <span id="filterCountBadge" class="filter-count-badge" hidden></span>
-            <i class="filter-chevron" data-lucide="chevron-down"></i>
+            <i class="filter-chevron" aria-hidden="true" data-lucide="chevron-down"></i>
           </button>
-          <button id="clearFiltersBtn" class="ghost-button" type="button">
-            <i data-lucide="rotate-ccw"></i>
+          <button id="clearFiltersBtn" class="ghost-button" type="button" aria-label="Limpar todos os filtros">
+            <i aria-hidden="true" data-lucide="rotate-ccw"></i>
             <span>Limpar</span>
           </button>
         </div>
@@ -56,10 +58,10 @@
           <label class="field">
             <span>Busca</span>
             <div class="input-shell">
-              <i data-lucide="search"></i>
+              <i aria-hidden="true" data-lucide="search"></i>
               <input id="searchInput" type="search" placeholder="Objeto, empresa, contrato, processo..." autocomplete="off">
               <button id="clearSearchBtn" class="input-clear-button" type="button" aria-label="Limpar busca" hidden>
-                <i data-lucide="x"></i>
+                <i aria-hidden="true" data-lucide="x"></i>
               </button>
             </div>
           </label>
@@ -115,7 +117,7 @@
         </div>
       </aside>
 
-      <section class="workspace">
+      <section class="workspace" aria-label="Conteúdo do painel">
         <div class="section-heading">
           <div>
             <span>Transparência pública</span>
@@ -133,34 +135,34 @@
               <h2 id="summaryTitle">Resumo do recorte atual</h2>
               <p id="summaryHint">Síntese automática dos dados filtrados.</p>
             </div>
-            <div class="action-toolbar" aria-label="Exportações e relatório">
+            <div class="action-toolbar" role="group" aria-label="Exportações e relatório">
               <button id="copySummaryBtn" class="ghost-button" type="button">
-                <i data-lucide="copy"></i>
+                <i aria-hidden="true" data-lucide="copy"></i>
                 <span>Copiar resumo</span>
               </button>
               <button id="exportCsvBtn" class="ghost-button" type="button">
-                <i data-lucide="file-down"></i>
+                <i aria-hidden="true" data-lucide="file-down"></i>
                 <span>Exportar CSV</span>
               </button>
               <button id="printReportBtn" class="ghost-button" type="button">
-                <i data-lucide="printer"></i>
+                <i aria-hidden="true" data-lucide="printer"></i>
                 <span>Imprimir</span>
               </button>
             </div>
           </div>
           <p id="autoSummary" class="auto-summary" aria-live="polite"></p>
-          <p id="actionFeedback" class="action-feedback" aria-live="polite"></p>
+          <p id="actionFeedback" class="action-feedback" role="status" aria-live="polite"></p>
         </section>
 
         <div class="section-heading compact">
           <div>
             <span>Qualidade dos dados</span>
-            <h2>Completude cadastral</h2>
+            <h2 id="qualityTitle">Completude cadastral</h2>
           </div>
           <p>Alertas discretos para apoiar revisão de contratos com campos incompletos.</p>
         </div>
 
-        <section class="quality-panel panel">
+        <section class="quality-panel panel" aria-labelledby="qualityTitle">
           <div id="qualityGrid" class="quality-grid" aria-label="Indicadores de qualidade dos dados"></div>
           <div id="qualityAlerts" class="quality-alerts" aria-live="polite"></div>
         </section>
@@ -168,22 +170,22 @@
         <div class="section-heading compact">
           <div>
             <span>Análise visual</span>
-            <h2>Distribuição dos contratos</h2>
+            <h2 id="chartsTitle">Distribuição dos contratos</h2>
           </div>
           <p>Leitura rápida por status, prazos, modalidades, empresas e qualidade cadastral.</p>
         </div>
 
-        <section class="analytics-grid">
+        <section class="analytics-grid" aria-labelledby="chartsTitle">
           <article class="panel chart-panel">
             <div class="panel-header">
               <div>
                 <h2>Status dos contratos</h2>
                 <p id="statusChartHint"></p>
               </div>
-              <i data-lucide="activity"></i>
+              <i aria-hidden="true" data-lucide="activity"></i>
             </div>
             <div class="chart-frame">
-              <canvas id="statusChart"></canvas>
+              <canvas id="statusChart" role="img" aria-label="Gráfico de contratos por status"></canvas>
               <p id="statusChartEmpty" class="chart-empty" hidden>Sem dados para exibir neste recorte.</p>
             </div>
           </article>
@@ -194,10 +196,10 @@
                 <h2>Valor por modalidade</h2>
                 <p id="modalidadeChartHint"></p>
               </div>
-              <i data-lucide="bar-chart-3"></i>
+              <i aria-hidden="true" data-lucide="bar-chart-3"></i>
             </div>
             <div class="chart-frame">
-              <canvas id="modalidadeChart"></canvas>
+              <canvas id="modalidadeChart" role="img" aria-label="Gráfico de valor por modalidade"></canvas>
               <p id="modalidadeChartEmpty" class="chart-empty" hidden>Sem valores por modalidade neste recorte.</p>
             </div>
           </article>
@@ -208,10 +210,10 @@
                 <h2>Contratos por modalidade</h2>
                 <p id="modalidadeCountChartHint"></p>
               </div>
-              <i data-lucide="layers-3"></i>
+              <i aria-hidden="true" data-lucide="layers-3"></i>
             </div>
             <div class="chart-frame">
-              <canvas id="modalidadeCountChart"></canvas>
+              <canvas id="modalidadeCountChart" role="img" aria-label="Gráfico de contratos por modalidade"></canvas>
               <p id="modalidadeCountChartEmpty" class="chart-empty" hidden>Sem contratos por modalidade neste recorte.</p>
             </div>
           </article>
@@ -222,10 +224,10 @@
                 <h2>Vencimentos por mês</h2>
                 <p id="dueMonthChartHint"></p>
               </div>
-              <i data-lucide="calendar-days"></i>
+              <i aria-hidden="true" data-lucide="calendar-days"></i>
             </div>
             <div class="chart-frame">
-              <canvas id="dueMonthChart"></canvas>
+              <canvas id="dueMonthChart" role="img" aria-label="Gráfico de vencimentos por mês"></canvas>
               <p id="dueMonthChartEmpty" class="chart-empty" hidden>Sem vencimentos datados neste recorte.</p>
             </div>
           </article>
@@ -236,10 +238,10 @@
                 <h2>Empresas por valor</h2>
                 <p id="companyValueChartHint"></p>
               </div>
-              <i data-lucide="building-2"></i>
+              <i aria-hidden="true" data-lucide="building-2"></i>
             </div>
             <div class="chart-frame">
-              <canvas id="companyValueChart"></canvas>
+              <canvas id="companyValueChart" role="img" aria-label="Gráfico de empresas por valor contratado"></canvas>
               <p id="companyValueChartEmpty" class="chart-empty" hidden>Sem valores por empresa neste recorte.</p>
             </div>
           </article>
@@ -250,10 +252,10 @@
                 <h2>Empresas por quantidade</h2>
                 <p id="companyCountChartHint"></p>
               </div>
-              <i data-lucide="list-ordered"></i>
+              <i aria-hidden="true" data-lucide="list-ordered"></i>
             </div>
             <div class="chart-frame">
-              <canvas id="companyCountChart"></canvas>
+              <canvas id="companyCountChart" role="img" aria-label="Gráfico de empresas por quantidade de contratos"></canvas>
               <p id="companyCountChartEmpty" class="chart-empty" hidden>Sem empresas neste recorte.</p>
             </div>
           </article>
@@ -264,10 +266,10 @@
                 <h2>Distribuição por prazo</h2>
                 <p id="deadlineChartHint"></p>
               </div>
-              <i data-lucide="timer"></i>
+              <i aria-hidden="true" data-lucide="timer"></i>
             </div>
             <div class="chart-frame">
-              <canvas id="deadlineChart"></canvas>
+              <canvas id="deadlineChart" role="img" aria-label="Gráfico de distribuição por prazo"></canvas>
               <p id="deadlineChartEmpty" class="chart-empty" hidden>Sem prazos neste recorte.</p>
             </div>
           </article>
@@ -278,10 +280,10 @@
                 <h2>Qualidade cadastral</h2>
                 <p id="qualityChartHint"></p>
               </div>
-              <i data-lucide="clipboard-check"></i>
+              <i aria-hidden="true" data-lucide="clipboard-check"></i>
             </div>
             <div class="chart-frame">
-              <canvas id="qualityChart"></canvas>
+              <canvas id="qualityChart" role="img" aria-label="Gráfico de qualidade cadastral dos dados"></canvas>
               <p id="qualityChartEmpty" class="chart-empty" hidden>Sem dados de qualidade neste recorte.</p>
             </div>
           </article>
@@ -290,12 +292,12 @@
         <div class="section-heading compact">
           <div>
             <span>Consulta detalhada</span>
-            <h2>Relação de contratos</h2>
+            <h2 id="contractsTitle">Relação de contratos</h2>
           </div>
           <p>Contratos abertos aparecem primeiro, com status de prazo e pendências cadastrais destacados.</p>
         </div>
 
-        <section class="panel table-panel">
+        <section class="panel table-panel" aria-labelledby="contractsTitle">
           <div class="table-toolbar">
             <div class="table-title">
               <h2>Contratos vigentes e em acompanhamento</h2>
@@ -319,32 +321,33 @@
                 </select>
               </label>
               <button id="sortDirBtn" class="sort-dir-button" type="button" aria-label="Alternar direção da ordenação">
-                <i data-lucide="arrow-up-narrow-wide"></i>
+                <i aria-hidden="true" data-lucide="arrow-up-narrow-wide"></i>
                 <span id="sortDirLabel">Crescente</span>
               </button>
               <button id="densityBtn" class="density-button" type="button" aria-pressed="false">
-                <i data-lucide="rows-3"></i>
+                <i aria-hidden="true" data-lucide="rows-3"></i>
                 <span id="densityLabel">Compacto</span>
               </button>
             </div>
-            <p id="resultSummary" class="result-summary" aria-live="polite"></p>
-            <div id="activeFilters" class="active-filters" aria-live="polite"></div>
+            <p id="resultSummary" class="result-summary" role="status" aria-live="polite"></p>
+            <div id="activeFilters" class="active-filters" aria-label="Filtros ativos" aria-live="polite"></div>
           </div>
           <div class="table-scroll">
-            <table>
+            <table aria-describedby="tableCount">
+              <caption class="sr-only">Contratos vigentes e em acompanhamento</caption>
               <thead>
                 <tr>
-                  <th><button type="button" data-sort="id">ID</button></th>
-                  <th><button type="button" data-sort="contrato">Contrato</button></th>
-                  <th><button type="button" data-sort="processo">Processo</button></th>
-                  <th><button type="button" data-sort="objeto">Objeto</button></th>
-                  <th><button type="button" data-sort="empresa">Empresa</button></th>
-                  <th><button type="button" data-sort="modalidade">Modalidade</button></th>
-                  <th><button type="button" data-sort="valor">Valor</button></th>
-                  <th><button type="button" data-sort="dataVencimento">Vencimento</button></th>
-                  <th><button type="button" data-sort="status">Status</button></th>
-                  <th><button type="button" data-sort="gestor">Gestor</button></th>
-                  <th><button type="button" data-sort="fiscal">Fiscal</button></th>
+                  <th scope="col"><button type="button" data-sort="id">ID</button></th>
+                  <th scope="col"><button type="button" data-sort="contrato">Contrato</button></th>
+                  <th scope="col"><button type="button" data-sort="processo">Processo</button></th>
+                  <th scope="col"><button type="button" data-sort="objeto">Objeto</button></th>
+                  <th scope="col"><button type="button" data-sort="empresa">Empresa</button></th>
+                  <th scope="col"><button type="button" data-sort="modalidade">Modalidade</button></th>
+                  <th scope="col"><button type="button" data-sort="valor">Valor</button></th>
+                  <th scope="col"><button type="button" data-sort="dataVencimento">Vencimento</button></th>
+                  <th scope="col"><button type="button" data-sort="status">Status</button></th>
+                  <th scope="col"><button type="button" data-sort="gestor">Gestor</button></th>
+                  <th scope="col"><button type="button" data-sort="fiscal">Fiscal</button></th>
                 </tr>
               </thead>
               <tbody id="contractsTable" class="contracts-table-body"></tbody>
@@ -361,24 +364,25 @@
                 <p id="expiredTableCount" aria-live="polite"></p>
               </div>
               <button class="section-toggle-button" type="button" data-section-toggle aria-expanded="true" aria-controls="expiredContractsContent" aria-label="Recolher contratos vencidos">
-                <i data-lucide="chevron-down"></i>
+                <i aria-hidden="true" data-lucide="chevron-down"></i>
               </button>
             </div>
             <div id="expiredContractsContent" class="section-content table-scroll">
-              <table>
+              <table aria-describedby="expiredTableCount">
+                <caption class="sr-only">Contratos vencidos</caption>
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>Contrato</th>
-                    <th>Processo</th>
-                    <th>Objeto</th>
-                    <th>Empresa</th>
-                    <th>Modalidade</th>
-                    <th>Valor</th>
-                    <th>Vencimento</th>
-                    <th>Status</th>
-                    <th>Gestor</th>
-                    <th>Fiscal</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Contrato</th>
+                    <th scope="col">Processo</th>
+                    <th scope="col">Objeto</th>
+                    <th scope="col">Empresa</th>
+                    <th scope="col">Modalidade</th>
+                    <th scope="col">Valor</th>
+                    <th scope="col">Vencimento</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Gestor</th>
+                    <th scope="col">Fiscal</th>
                   </tr>
                 </thead>
                 <tbody id="expiredContractsTable" class="contracts-table-body"></tbody>
@@ -393,24 +397,25 @@
                 <p id="completedTableCount" aria-live="polite"></p>
               </div>
               <button class="section-toggle-button" type="button" data-section-toggle aria-expanded="true" aria-controls="completedContractsContent" aria-label="Recolher contratos encerrados e concluídos">
-                <i data-lucide="chevron-down"></i>
+                <i aria-hidden="true" data-lucide="chevron-down"></i>
               </button>
             </div>
             <div id="completedContractsContent" class="section-content table-scroll">
-              <table>
+              <table aria-describedby="completedTableCount">
+                <caption class="sr-only">Contratos encerrados e concluídos</caption>
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>Contrato</th>
-                    <th>Processo</th>
-                    <th>Objeto</th>
-                    <th>Empresa</th>
-                    <th>Modalidade</th>
-                    <th>Valor</th>
-                    <th>Vencimento</th>
-                    <th>Status</th>
-                    <th>Gestor</th>
-                    <th>Fiscal</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Contrato</th>
+                    <th scope="col">Processo</th>
+                    <th scope="col">Objeto</th>
+                    <th scope="col">Empresa</th>
+                    <th scope="col">Modalidade</th>
+                    <th scope="col">Valor</th>
+                    <th scope="col">Vencimento</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Gestor</th>
+                    <th scope="col">Fiscal</th>
                   </tr>
                 </thead>
                 <tbody id="completedContractsTable" class="contracts-table-body"></tbody>
@@ -430,7 +435,7 @@
     </footer>
 
     <button id="backToTopBtn" class="floating-top-button" type="button" aria-label="Voltar ao topo" hidden>
-      <i data-lucide="arrow-up"></i>
+      <i aria-hidden="true" data-lucide="arrow-up"></i>
     </button>
   </body>
 </html>

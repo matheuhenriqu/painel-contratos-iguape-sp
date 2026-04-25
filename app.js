@@ -1,6 +1,7 @@
 const SELECT_ALL = "todos";
 const TABLE_COLUMN_COUNT = 11;
 const MS_PER_DAY = 86_400_000;
+const RENDER_DEBOUNCE_MS = 120;
 const BREAKPOINTS = {
   small: 720,
   filters: 820,
@@ -74,6 +75,7 @@ const state = {
 };
 
 const charts = {};
+const chartSignatures = {};
 const viewState = {
   filteredRows: [],
   currentRows: [],
@@ -466,16 +468,16 @@ function renderKpis(metrics) {
     { label: "Atualização", value: formatShortUpdatedAt(metrics.updatedAt), note: `${numberFormat.format(metrics.filteredContracts)} no recorte`, icon: "database", color: "green" },
   ];
 
-  elements.kpiGrid.innerHTML = cards.map((card) => `
+  setSafeHtml(elements.kpiGrid, cards.map((card) => `
     <article class="kpi-card">
-      <span class="kpi-icon ${escapeAttr(card.color)}" aria-hidden="true"><i data-lucide="${escapeAttr(card.icon)}"></i></span>
+      <span class="kpi-icon ${escapeAttr(card.color)}" aria-hidden="true"><i aria-hidden="true" data-lucide="${escapeAttr(card.icon)}"></i></span>
       <div>
         <span>${escapeHtml(card.label)}</span>
         <strong>${escapeHtml(card.value)}</strong>
         <small>${escapeHtml(card.note)}</small>
       </div>
     </article>
-  `).join("");
+  `).join(""));
 }
 
 function renderInsights(rows, metrics) {
@@ -517,16 +519,16 @@ function renderInsights(rows, metrics) {
     },
   ];
 
-  elements.insightGrid.innerHTML = cards.map((card) => `
+  setSafeHtml(elements.insightGrid, cards.map((card) => `
     <article class="insight-card ${escapeAttr(card.tone)}">
-      <span class="insight-icon" aria-hidden="true"><i data-lucide="${escapeAttr(card.icon)}"></i></span>
+      <span class="insight-icon" aria-hidden="true"><i aria-hidden="true" data-lucide="${escapeAttr(card.icon)}"></i></span>
       <div>
         <span>${escapeHtml(card.label)}</span>
         <strong>${escapeHtml(card.value)}</strong>
-        <small title="${escapeHtml(card.note)}">${escapeHtml(card.note)}</small>
+        <small title="${escapeAttr(card.note)}">${escapeHtml(card.note)}</small>
       </div>
     </article>
-  `).join("");
+  `).join(""));
 }
 
 function renderQuality(metrics) {
@@ -538,12 +540,12 @@ function renderQuality(metrics) {
     { key: "incomplete", label: "Registros incompletos", icon: "clipboard-x" },
   ];
 
-  elements.qualityGrid.innerHTML = cards.map((card) => {
+  setSafeHtml(elements.qualityGrid, cards.map((card) => {
     const count = card.key === "incomplete" ? metrics.quality.incompleteCount : metrics.quality.counts[card.key];
     const note = card.key === "incomplete" ? "com pelo menos uma pendência" : "do recorte atual";
     return `
       <article class="quality-card">
-        <span class="quality-icon" aria-hidden="true"><i data-lucide="${escapeAttr(card.icon)}"></i></span>
+        <span class="quality-icon" aria-hidden="true"><i aria-hidden="true" data-lucide="${escapeAttr(card.icon)}"></i></span>
         <div>
           <span>${escapeHtml(card.label)}</span>
           <strong>${escapeHtml(formatPercent(count, metrics.filteredContracts))}</strong>
@@ -551,15 +553,15 @@ function renderQuality(metrics) {
         </div>
       </article>
     `;
-  }).join("");
+  }).join(""));
 
   const alerts = getQualityAlerts(metrics);
-  elements.qualityAlerts.innerHTML = alerts.map((alert) => `
+  setSafeHtml(elements.qualityAlerts, alerts.map((alert) => `
     <p class="quality-alert ${escapeAttr(alert.tone)}">
-      <i data-lucide="${escapeAttr(alert.icon)}"></i>
+      <i aria-hidden="true" data-lucide="${escapeAttr(alert.icon)}"></i>
       <span>${escapeHtml(alert.text)}</span>
     </p>
-  `).join("");
+  `).join(""));
 }
 
 function renderAutoSummary(metrics) {
@@ -800,13 +802,16 @@ function renderChart(canvasId, emptyId, config, hasData) {
     if (charts[canvasId]) {
       charts[canvasId].destroy();
       delete charts[canvasId];
+      delete chartSignatures[canvasId];
     }
     canvas.hidden = true;
+    canvas.setAttribute("aria-hidden", "true");
     if (empty) empty.hidden = false;
     return;
   }
 
   canvas.hidden = false;
+  canvas.removeAttribute("aria-hidden");
   if (empty) empty.hidden = true;
   upsertChart(canvasId, config);
 }
@@ -821,12 +826,17 @@ function renderActiveFilters() {
   if (state.fiscal !== SELECT_ALL) chipData.push({ key: "fiscal", label: `Fiscal: ${state.fiscal}` });
   if (state.ano !== SELECT_ALL) chipData.push({ key: "ano", label: `Ano: ${state.ano}` });
 
-  elements.activeFilters.innerHTML = chipData.map((chip) => `
-    <button class="filter-chip" type="button" data-clear-filter="${chip.key}" aria-label="Remover filtro ${escapeAttr(chip.label)}">
+  if (!chipData.length) {
+    setSafeHtml(elements.activeFilters, '<span class="sr-only">Nenhum filtro ativo</span>');
+    return;
+  }
+
+  setSafeHtml(elements.activeFilters, chipData.map((chip) => `
+    <button class="filter-chip" type="button" data-clear-filter="${escapeAttr(chip.key)}" aria-label="Remover filtro ${escapeAttr(chip.label)}">
       <span>${escapeHtml(chip.label)}</span>
-      <i data-lucide="x"></i>
+      <i aria-hidden="true" data-lucide="x"></i>
     </button>
-  `).join("");
+  `).join(""));
 }
 
 function renderResultSummary(metrics) {
@@ -1033,12 +1043,12 @@ function renderTable(rows) {
   elements.tableCount.textContent = formatTableCount(shown, rows.length, "em acompanhamento");
 
   if (!rows.length) {
-    elements.table.innerHTML = renderEmptyRow("Nenhum contrato encontrado.");
-    elements.tablePager.innerHTML = "";
+    setSafeHtml(elements.table, renderEmptyRow("Nenhum contrato encontrado."));
+    clearElement(elements.tablePager);
     return;
   }
 
-  elements.table.innerHTML = renderRows(visibleRows);
+  setSafeHtml(elements.table, renderRows(visibleRows));
   renderTablePager(rows.length, shown);
 }
 
@@ -1046,16 +1056,16 @@ function renderSectionTable(table, countElement, rows, label, emptyMessage) {
   countElement.textContent = `${numberFormat.format(rows.length)} contrato(s) ${label} no recorte atual`;
 
   if (!rows.length) {
-    table.innerHTML = renderEmptyRow(emptyMessage);
+    setSafeHtml(table, renderEmptyRow(emptyMessage));
     return;
   }
 
-  table.innerHTML = renderRows(rows);
+  setSafeHtml(table, renderRows(rows));
 }
 
 function renderRows(rows) {
   return rows.map((item) => `
-    <tr class="${escapeAttr(rowClassNames(item))}">
+    <tr class="${escapeAttr(rowClassNames(item))}" aria-label="${escapeAttr(getRowSummary(item))}">
       <td data-label="ID">${escapeHtml(item.id ?? "")}</td>
       <td data-label="Contrato" class="${escapeAttr(fieldCellClass(item, "contrato"))}"><span class="reference-code">${escapeHtml(item.display.contrato)}</span></td>
       <td data-label="Processo" class="${escapeAttr(fieldCellClass(item, "processo"))}"><span class="reference-code">${escapeHtml(item.display.processo)}</span></td>
@@ -1097,6 +1107,16 @@ function rowClassNames(item) {
 
 function fieldCellClass(item, key) {
   return item.display.isMissing[key] ? "muted missing-field" : "";
+}
+
+function getRowSummary(item) {
+  return [
+    `Contrato ${item.display.contrato}`,
+    `processo ${item.display.processo}`,
+    item.display.objeto,
+    `status ${item.businessStatus.label}`,
+    `vencimento ${item.display.dataVencimento}`,
+  ].join("; ");
 }
 
 function configureFilterPanel() {
@@ -1304,7 +1324,7 @@ function syncSortControls() {
 }
 
 function renderEmptyRow(message) {
-  return `<tr><td colspan="${TABLE_COLUMN_COUNT}" class="empty-state">${escapeHtml(message)}</td></tr>`;
+  return `<tr><td colspan="${TABLE_COLUMN_COUNT}" class="empty-state" role="status">${escapeHtml(message)}</td></tr>`;
 }
 
 function applyDensityMode() {
@@ -1341,24 +1361,24 @@ function formatTableCount(shown, filteredTotal, label = "contratos") {
 
 function renderTablePager(total, shown) {
   if (shown >= total) {
-    elements.tablePager.innerHTML = "";
+    clearElement(elements.tablePager);
     return;
   }
 
   const remaining = total - shown;
-  elements.tablePager.innerHTML = `
+  setSafeHtml(elements.tablePager, `
     <span>${numberFormat.format(remaining)} contrato(s) restantes</span>
     <div>
       <button class="pager-button" type="button" data-page-action="more">
-        <i data-lucide="chevrons-down"></i>
+        <i aria-hidden="true" data-lucide="chevrons-down"></i>
         <span>Mostrar mais</span>
       </button>
       <button class="pager-button" type="button" data-page-action="all">
-        <i data-lucide="list"></i>
+        <i aria-hidden="true" data-lucide="list"></i>
         <span>Mostrar todos</span>
       </button>
     </div>
-  `;
+  `);
 }
 
 function resetVisibleLimit() {
@@ -1584,9 +1604,28 @@ function addMediaChangeListener(mediaQuery, listener) {
 }
 
 function fillSelect(select, allLabel, options) {
-  select.innerHTML = [`<option value="${SELECT_ALL}">${escapeHtml(allLabel)}</option>`]
-    .concat(options.map((option) => `<option value="${escapeAttr(option)}">${escapeHtml(option)}</option>`))
-    .join("");
+  const fragment = document.createDocumentFragment();
+  fragment.append(createOption(SELECT_ALL, allLabel));
+  options.forEach((option) => {
+    fragment.append(createOption(option, option));
+  });
+  select.replaceChildren(fragment);
+}
+
+function createOption(value, label) {
+  const option = document.createElement("option");
+  option.value = String(value);
+  option.textContent = String(label);
+  return option;
+}
+
+function setSafeHtml(element, html) {
+  // Use only with templates whose dynamic data was passed through escapeHtml/escapeAttr.
+  element.innerHTML = html;
+}
+
+function clearElement(element) {
+  element.replaceChildren();
 }
 
 function unique(values) {
@@ -1806,8 +1845,28 @@ function chartColors(length) {
 function upsertChart(id, config) {
   const ctx = document.getElementById(id);
   if (!ctx) return;
-  if (charts[id]) charts[id].destroy();
-  charts[id] = new Chart(ctx, config);
+  const signature = getChartSignature(config);
+
+  if (charts[id] && chartSignatures[id] === signature) return;
+
+  if (charts[id] && charts[id].config.type === config.type) {
+    charts[id].data = config.data;
+    charts[id].options = config.options;
+    charts[id].update(isReducedMotion() ? "none" : undefined);
+  } else {
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart(ctx, config);
+  }
+  chartSignatures[id] = signature;
+}
+
+function getChartSignature(config) {
+  return JSON.stringify({
+    type: config.type,
+    data: config.data,
+    small: isSmallViewport(),
+    reducedMotion: isReducedMotion(),
+  });
 }
 
 function commonPlugins() {
@@ -1913,7 +1972,7 @@ function chartAnimation() {
 
 function queueRender() {
   window.clearTimeout(searchRenderTimer);
-  searchRenderTimer = window.setTimeout(render, 120);
+  searchRenderTimer = window.setTimeout(render, RENDER_DEBOUNCE_MS);
 }
 
 function updateSearchClearButton() {
