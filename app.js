@@ -37,6 +37,13 @@ const FIELD_FALLBACKS = {
   status: "Sem status informado",
   informacao: "Sem informação suficiente",
 };
+const QUALITY_FIELDS = [
+  { key: "gestor", label: "Sem gestor", issue: "gestor não informado" },
+  { key: "fiscal", label: "Sem fiscal", issue: "fiscal não informado" },
+  { key: "dataVencimento", label: "Sem vencimento", issue: "data de vencimento não informada" },
+  { key: "valor", label: "Sem valor", issue: "valor não informado ou zerado" },
+  { key: "empresa", label: "Sem empresa", issue: "empresa não informada" },
+];
 const collator = new Intl.Collator("pt-BR", {
   numeric: true,
   sensitivity: "base",
@@ -67,9 +74,18 @@ const state = {
 };
 
 const charts = {};
+const viewState = {
+  filteredRows: [],
+  currentRows: [],
+  expiredRows: [],
+  completedRows: [],
+  metrics: null,
+  summaryText: "",
+};
 let userToggledFilters = false;
 let searchRenderTimer = null;
 let scrollTicking = false;
+let actionFeedbackTimer = null;
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -79,6 +95,7 @@ const currency = new Intl.NumberFormat("pt-BR", {
 
 const numberFormat = new Intl.NumberFormat("pt-BR");
 const dateFormat = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
+const monthFormat = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit", timeZone: "UTC" });
 const elements = {
   updatedLabel: queryRequired("#updatedLabel"),
   filters: queryRequired(".filters"),
@@ -111,10 +128,23 @@ const elements = {
   densityBtn: queryRequired("#densityBtn"),
   densityLabel: queryRequired("#densityLabel"),
   resultSummary: queryRequired("#resultSummary"),
+  autoSummary: queryRequired("#autoSummary"),
+  actionFeedback: queryRequired("#actionFeedback"),
+  copySummaryBtn: queryRequired("#copySummaryBtn"),
+  exportCsvBtn: queryRequired("#exportCsvBtn"),
+  printReportBtn: queryRequired("#printReportBtn"),
+  qualityGrid: queryRequired("#qualityGrid"),
+  qualityAlerts: queryRequired("#qualityAlerts"),
   sectionToggleButtons: queryAll("[data-section-toggle]"),
   backToTopBtn: queryRequired("#backToTopBtn"),
   statusChartHint: queryRequired("#statusChartHint"),
   modalidadeChartHint: queryRequired("#modalidadeChartHint"),
+  modalidadeCountChartHint: queryRequired("#modalidadeCountChartHint"),
+  dueMonthChartHint: queryRequired("#dueMonthChartHint"),
+  companyValueChartHint: queryRequired("#companyValueChartHint"),
+  companyCountChartHint: queryRequired("#companyCountChartHint"),
+  deadlineChartHint: queryRequired("#deadlineChartHint"),
+  qualityChartHint: queryRequired("#qualityChartHint"),
 };
 
 const today = startOfDay(new Date());
@@ -248,6 +278,13 @@ function bindEvents() {
     updateUrlFromState();
   });
 
+  elements.copySummaryBtn.addEventListener("click", copyCurrentSummary);
+  elements.exportCsvBtn.addEventListener("click", exportFilteredCsv);
+  elements.printReportBtn.addEventListener("click", () => {
+    showActionFeedback("Preparando relatório para impressão.");
+    window.print();
+  });
+
   elements.activeFilters.addEventListener("click", (event) => {
     const button = event.target.closest("[data-clear-filter]");
     if (!button) return;
@@ -326,13 +363,18 @@ function render(options = {}) {
   const currentRows = sortRows(filtered.filter(isCurrentContract));
   const expiredRows = sortRows(filtered.filter(isExpiredContract));
   const completedRows = sortRows(filtered.filter(isCompletedContract));
-  renderKpis(filtered);
-  renderInsights(filtered);
-  renderCharts(filtered);
+  const metrics = buildDashboardMetrics(filtered, currentRows, expiredRows, completedRows);
+  updateViewState(filtered, currentRows, expiredRows, completedRows, metrics);
+  renderKpis(metrics);
+  renderInsights(filtered, metrics);
+  renderQuality(metrics);
+  renderAutoSummary(metrics);
+  renderCharts(filtered, metrics);
   renderQuickFilterIndicators();
   renderActiveFilters();
-  renderResultSummary(filtered.length, currentRows.length, expiredRows.length, completedRows.length);
+  renderResultSummary(metrics);
   updateFilterControls();
+  updateActionControls(filtered.length);
   renderTable(currentRows);
   renderSectionTable(elements.expiredTable, elements.expiredTableCount, expiredRows, "vencido(s)", "Nenhum contrato vencido no recorte atual.");
   renderSectionTable(elements.completedTable, elements.completedTableCount, completedRows, "encerrado(s)/concluído(s)", "Nenhum contrato encerrado ou concluído no recorte atual.");
@@ -343,6 +385,8 @@ function render(options = {}) {
     current: currentRows.length,
     expired: expiredRows.length,
     completed: completedRows.length,
+    totalValue: metrics.totalValue,
+    filteredValue: metrics.filteredValue,
     sortKey: state.sortKey,
     sortDir: state.sortDir,
   };
@@ -366,19 +410,60 @@ function getFilteredRows() {
   });
 }
 
-function renderKpis(rows) {
-  const totalValue = sum(rows, "valor");
-  const activeCount = rows.filter((item) => item.businessStatus.key === "vigente").length;
-  const vencidos = rows.filter((item) => item.businessStatus.key === "vencido").length;
-  const vence30 = rows.filter((item) => item.businessStatus.prazoBucket === "30").length;
-  const semResponsavel = rows.filter((item) => item.display.isMissing.gestor || item.display.isMissing.fiscal).length;
+function updateViewState(filteredRows, currentRows, expiredRows, completedRows, metrics) {
+  viewState.filteredRows = filteredRows;
+  viewState.currentRows = currentRows;
+  viewState.expiredRows = expiredRows;
+  viewState.completedRows = completedRows;
+  viewState.metrics = metrics;
+}
 
+function buildDashboardMetrics(rows, currentRows, expiredRows, completedRows) {
+  const quality = getDataQualityMetrics(rows);
+  const due30 = rows.filter((item) => !item.isClosed && item.diasAtual !== null && item.diasAtual >= 0 && item.diasAtual <= 30).length;
+  const due90 = rows.filter((item) => !item.isClosed && item.diasAtual !== null && item.diasAtual >= 0 && item.diasAtual <= 90).length;
+  const nearDue = rows.filter((item) => item.businessStatus.key === "vence-hoje" || item.businessStatus.key === "proximo-de-vencer").length;
+
+  return {
+    rows,
+    totalContracts: records.length,
+    filteredContracts: rows.length,
+    totalValue: sum(records, "valor"),
+    filteredValue: sum(rows, "valor"),
+    currentCount: currentRows.length,
+    expiredCount: expiredRows.length,
+    closedCount: completedRows.length,
+    vigenteCount: rows.filter((item) => item.businessStatus.key === "vigente").length,
+    nearDue,
+    due30,
+    due90,
+    withoutManager: quality.counts.gestor,
+    withoutFiscal: quality.counts.fiscal,
+    withoutDueDate: quality.counts.dataVencimento,
+    withoutValue: quality.counts.valor,
+    withoutCompany: quality.counts.empresa,
+    updatedAt: sourceData.updatedAt || sourceData.generatedAt,
+    quality,
+  };
+}
+
+function renderKpis(metrics) {
   const cards = [
-    { label: "Contratos", value: numberFormat.format(rows.length), note: `${numberFormat.format(records.length)} na base`, icon: "file-text", color: "green" },
-    { label: "Valor total", value: compactCurrency(totalValue), note: formatCurrency(totalValue), icon: "wallet", color: "teal" },
-    { label: "Vigentes", value: numberFormat.format(activeCount), note: "prazo regular acima de 90 dias", icon: "check-circle-2", color: "plum" },
-    { label: "Vencidos", value: numberFormat.format(vencidos), note: "contratos não encerrados", icon: "circle-alert", color: "red" },
-    { label: "Até 30 dias", value: numberFormat.format(vence30), note: `${numberFormat.format(semResponsavel)} sem gestor/fiscal`, icon: "clock-3", color: "amber" },
+    { label: "Total de contratos", value: numberFormat.format(metrics.filteredContracts), note: `${numberFormat.format(metrics.totalContracts)} na base`, icon: "file-text", color: "green" },
+    { label: "Valor da base", value: compactCurrency(metrics.totalValue), note: formatCurrency(metrics.totalValue), icon: "landmark", color: "teal" },
+    { label: "Valor filtrado", value: compactCurrency(metrics.filteredValue), note: formatCurrency(metrics.filteredValue), icon: "wallet", color: "teal" },
+    { label: "Vigentes", value: numberFormat.format(metrics.vigenteCount), note: "prazo acima de 90 dias", icon: "check-circle-2", color: "green" },
+    { label: "Vencidos", value: numberFormat.format(metrics.expiredCount), note: "prazo expirado e aberto", icon: "circle-alert", color: "red" },
+    { label: "Próx. vencer", value: numberFormat.format(metrics.nearDue), note: "vence hoje ou em até 7 dias", icon: "alarm-clock", color: "amber" },
+    { label: "Até 30 dias", value: numberFormat.format(metrics.due30), note: "contratos abertos", icon: "clock-3", color: "amber" },
+    { label: "Até 90 dias", value: numberFormat.format(metrics.due90), note: "inclui vencimentos até 30 dias", icon: "calendar-clock", color: "plum" },
+    { label: "Encerr./concl.", value: numberFormat.format(metrics.closedCount), note: "não entram como vencidos", icon: "archive", color: "plum" },
+    { label: "Sem gestor", value: numberFormat.format(metrics.withoutManager), note: formatPercent(metrics.withoutManager, metrics.filteredContracts), icon: "user-round-x", color: "red" },
+    { label: "Sem fiscal", value: numberFormat.format(metrics.withoutFiscal), note: formatPercent(metrics.withoutFiscal, metrics.filteredContracts), icon: "badge-alert", color: "red" },
+    { label: "Sem vencimento", value: numberFormat.format(metrics.withoutDueDate), note: formatPercent(metrics.withoutDueDate, metrics.filteredContracts), icon: "calendar-x", color: "amber" },
+    { label: "Sem valor", value: numberFormat.format(metrics.withoutValue), note: "ausente ou zerado", icon: "badge-dollar-sign", color: "amber" },
+    { label: "Sem empresa", value: numberFormat.format(metrics.withoutCompany), note: formatPercent(metrics.withoutCompany, metrics.filteredContracts), icon: "building-2", color: "plum" },
+    { label: "Atualização", value: formatShortUpdatedAt(metrics.updatedAt), note: `${numberFormat.format(metrics.filteredContracts)} no recorte`, icon: "database", color: "green" },
   ];
 
   elements.kpiGrid.innerHTML = cards.map((card) => `
@@ -393,7 +478,7 @@ function renderKpis(rows) {
   `).join("");
 }
 
-function renderInsights(rows) {
+function renderInsights(rows, metrics) {
   const openRows = rows.filter((item) => !item.isClosed);
   const nextDue = sortByDueDateAsc(openRows.filter((item) => item.dataVencimentoDate && item.diasAtual !== null && item.diasAtual >= 0))[0];
   const highestValue = [...rows].sort((a, b) => (toFiniteNumber(b.valor) || 0) - (toFiniteNumber(a.valor) || 0))[0];
@@ -419,7 +504,7 @@ function renderInsights(rows) {
     {
       label: "Sem gestor/fiscal",
       value: numberFormat.format(missingResponsibles.length),
-      note: "cadastro incompleto no recorte atual",
+      note: `${formatPercent(missingResponsibles.length, metrics.filteredContracts)} do recorte atual`,
       icon: "user-round-x",
       tone: "plum",
     },
@@ -444,31 +529,286 @@ function renderInsights(rows) {
   `).join("");
 }
 
-function renderCharts(rows) {
+function renderQuality(metrics) {
+  const cards = [
+    { key: "gestor", label: "Sem gestor", icon: "user-round-x" },
+    { key: "fiscal", label: "Sem fiscal", icon: "badge-alert" },
+    { key: "dataVencimento", label: "Sem vencimento", icon: "calendar-x" },
+    { key: "valor", label: "Sem valor", icon: "badge-dollar-sign" },
+    { key: "incomplete", label: "Registros incompletos", icon: "clipboard-x" },
+  ];
+
+  elements.qualityGrid.innerHTML = cards.map((card) => {
+    const count = card.key === "incomplete" ? metrics.quality.incompleteCount : metrics.quality.counts[card.key];
+    const note = card.key === "incomplete" ? "com pelo menos uma pendência" : "do recorte atual";
+    return `
+      <article class="quality-card">
+        <span class="quality-icon" aria-hidden="true"><i data-lucide="${escapeAttr(card.icon)}"></i></span>
+        <div>
+          <span>${escapeHtml(card.label)}</span>
+          <strong>${escapeHtml(formatPercent(count, metrics.filteredContracts))}</strong>
+          <small>${escapeHtml(numberFormat.format(count))} contrato(s) ${escapeHtml(note)}</small>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  const alerts = getQualityAlerts(metrics);
+  elements.qualityAlerts.innerHTML = alerts.map((alert) => `
+    <p class="quality-alert ${escapeAttr(alert.tone)}">
+      <i data-lucide="${escapeAttr(alert.icon)}"></i>
+      <span>${escapeHtml(alert.text)}</span>
+    </p>
+  `).join("");
+}
+
+function renderAutoSummary(metrics) {
+  const summary = buildTextSummary(metrics);
+  viewState.summaryText = summary;
+  elements.autoSummary.textContent = summary;
+}
+
+function renderCharts(rows, metrics) {
   if (!window.Chart) return;
 
   const statusData = countBy(rows, (item) => item.businessStatus.label);
   elements.statusChartHint.textContent = `${statusData.labels.length} status visíveis`;
-  upsertChart("statusChart", {
+  renderChart("statusChart", "statusChartEmpty", {
     type: "doughnut",
     data: {
       labels: statusData.labels,
       datasets: [{ data: statusData.values, backgroundColor: chartColors(statusData.labels.length), borderWidth: 2, borderColor: "#fff" }],
     },
     options: doughnutOptions(),
-  });
+  }, rows.length > 0 && statusData.labels.length > 0);
 
   const modalidadeData = sumBy(rows, (item) => item.display.modalidade, (item) => item.valor)
     .slice(0, 8);
   elements.modalidadeChartHint.textContent = `${modalidadeData.length} modalidades com maior valor`;
-  upsertChart("modalidadeChart", {
+  renderChart("modalidadeChart", "modalidadeChartEmpty", {
     type: "bar",
     data: {
       labels: modalidadeData.map((item) => item.label),
       datasets: [{ label: "Valor", data: modalidadeData.map((item) => item.value), backgroundColor: "#24715d", borderRadius: 6 }],
     },
     options: horizontalBarOptions(true),
+  }, modalidadeData.some((item) => item.value > 0));
+
+  const modalidadeCountMap = countBy(rows, (item) => item.display.modalidade);
+  const modalidadeCountData = modalidadeCountMap.labels
+    .map((label, index) => ({ label, value: modalidadeCountMap.values[index] }))
+    .slice(0, 8);
+  elements.modalidadeCountChartHint.textContent = `${modalidadeCountData.length} modalidades com maior quantidade`;
+  renderChart("modalidadeCountChart", "modalidadeCountChartEmpty", {
+    type: "bar",
+    data: {
+      labels: modalidadeCountData.map((item) => item.label),
+      datasets: [{ label: "Contratos", data: modalidadeCountData.map((item) => item.value), backgroundColor: "#266485", borderRadius: 6 }],
+    },
+    options: horizontalBarOptions(false),
+  }, modalidadeCountData.length > 0);
+
+  const dueMonthData = getDueMonthData(rows);
+  elements.dueMonthChartHint.textContent = `${dueMonthData.length} mês(es) com vencimento`;
+  renderChart("dueMonthChart", "dueMonthChartEmpty", {
+    type: "bar",
+    data: {
+      labels: dueMonthData.map((item) => item.label),
+      datasets: [{ label: "Vencimentos", data: dueMonthData.map((item) => item.value), backgroundColor: "#bd7619", borderRadius: 6 }],
+    },
+    options: verticalBarOptions(false),
+  }, dueMonthData.length > 0);
+
+  const companyValueData = sumBy(rows, (item) => item.display.empresa, (item) => item.valor).slice(0, 8);
+  elements.companyValueChartHint.textContent = `${companyValueData.length} empresas com maior valor`;
+  renderChart("companyValueChart", "companyValueChartEmpty", {
+    type: "bar",
+    data: {
+      labels: companyValueData.map((item) => item.label),
+      datasets: [{ label: "Valor", data: companyValueData.map((item) => item.value), backgroundColor: "#16837a", borderRadius: 6 }],
+    },
+    options: horizontalBarOptions(true),
+  }, companyValueData.some((item) => item.value > 0));
+
+  const companyCountMap = countBy(rows, (item) => item.display.empresa);
+  const companyCountData = companyCountMap.labels.map((label, index) => ({ label, value: companyCountMap.values[index] })).slice(0, 8);
+  elements.companyCountChartHint.textContent = `${companyCountData.length} empresas com mais contratos`;
+  renderChart("companyCountChart", "companyCountChartEmpty", {
+    type: "bar",
+    data: {
+      labels: companyCountData.map((item) => item.label),
+      datasets: [{ label: "Contratos", data: companyCountData.map((item) => item.value), backgroundColor: "#70578e", borderRadius: 6 }],
+    },
+    options: horizontalBarOptions(false),
+  }, companyCountData.length > 0);
+
+  const deadlineData = getDeadlineDistribution(rows);
+  elements.deadlineChartHint.textContent = `${deadlineData.length} faixas de prazo`;
+  renderChart("deadlineChart", "deadlineChartEmpty", {
+    type: "doughnut",
+    data: {
+      labels: deadlineData.map((item) => item.label),
+      datasets: [{ data: deadlineData.map((item) => item.value), backgroundColor: deadlineData.map((item) => item.color), borderWidth: 2, borderColor: "#fff" }],
+    },
+    options: doughnutOptions(),
+  }, deadlineData.length > 0);
+
+  const qualityChartData = QUALITY_FIELDS.map((field) => ({
+    label: field.label,
+    value: metrics.quality.counts[field.key],
+  }));
+  elements.qualityChartHint.textContent = `${numberFormat.format(metrics.quality.incompleteCount)} registro(s) incompleto(s)`;
+  renderChart("qualityChart", "qualityChartEmpty", {
+    type: "bar",
+    data: {
+      labels: qualityChartData.map((item) => item.label),
+      datasets: [{ label: "Contratos", data: qualityChartData.map((item) => item.value), backgroundColor: "#a86613", borderRadius: 6 }],
+    },
+    options: verticalBarOptions(false),
+  }, metrics.filteredContracts > 0);
+}
+
+function getDataQualityMetrics(rows) {
+  const counts = {
+    gestor: rows.filter((item) => item.display.isMissing.gestor).length,
+    fiscal: rows.filter((item) => item.display.isMissing.fiscal).length,
+    dataVencimento: rows.filter((item) => item.display.isMissing.dataVencimento).length,
+    valor: rows.filter(hasMissingContractValue).length,
+    empresa: rows.filter((item) => item.display.isMissing.empresa).length,
+  };
+  const incompleteCount = rows.filter(hasIncompleteRegistration).length;
+  const percentages = Object.fromEntries(Object.entries(counts).map(([key, value]) => [key, getPercent(value, rows.length)]));
+
+  return {
+    total: rows.length,
+    counts,
+    percentages,
+    incompleteCount,
+    incompletePercent: getPercent(incompleteCount, rows.length),
+  };
+}
+
+function hasIncompleteRegistration(item) {
+  return item.display.isMissing.contrato
+    || item.display.isMissing.processo
+    || item.display.isMissing.objeto
+    || item.display.isMissing.empresa
+    || item.display.isMissing.modalidade
+    || item.display.isMissing.gestor
+    || item.display.isMissing.fiscal
+    || item.display.isMissing.dataVencimento
+    || hasMissingContractValue(item);
+}
+
+function getQualityAlerts(metrics) {
+  if (!metrics.filteredContracts) {
+    return [{ tone: "neutral", icon: "info", text: "Nenhum contrato encontrado no recorte atual para avaliar qualidade cadastral." }];
+  }
+
+  const alerts = QUALITY_FIELDS
+    .map((field) => ({
+      tone: metrics.quality.counts[field.key] ? "warning" : "ok",
+      icon: metrics.quality.counts[field.key] ? "triangle-alert" : "circle-check",
+      text: metrics.quality.counts[field.key]
+        ? `${numberFormat.format(metrics.quality.counts[field.key])} contrato(s) com ${field.issue} (${formatPercent(metrics.quality.counts[field.key], metrics.filteredContracts)}).`
+        : `Nenhum contrato com ${field.issue} no recorte atual.`,
+      count: metrics.quality.counts[field.key],
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 4);
+
+  if (metrics.quality.incompleteCount > 0) {
+    alerts.unshift({
+      tone: "warning",
+      icon: "clipboard-x",
+      text: `${numberFormat.format(metrics.quality.incompleteCount)} registro(s) com pelo menos uma pendência cadastral no recorte atual.`,
+      count: metrics.quality.incompleteCount,
+    });
+  }
+
+  return alerts;
+}
+
+function buildTextSummary(metrics) {
+  const filterText = getActiveFilterCount() ? ` Filtros ativos: ${formatActiveFiltersForSummary()}.` : " Sem filtros ativos.";
+  if (!metrics.filteredContracts) {
+    return `Nenhum contrato foi encontrado no recorte atual. Última atualização da base: ${formatUpdatedAt(metrics.updatedAt, true)}.${filterText}`;
+  }
+
+  const qualityText = metrics.quality.incompleteCount
+    ? ` Há ${numberFormat.format(metrics.quality.incompleteCount)} registro(s) incompleto(s), com destaque para ${numberFormat.format(metrics.withoutFiscal)} sem fiscal e ${numberFormat.format(metrics.withoutManager)} sem gestor.`
+    : " Não há pendências cadastrais no recorte atual.";
+
+  return [
+    `O recorte atual contém ${numberFormat.format(metrics.filteredContracts)} contrato(s), somando ${formatCurrency(metrics.filteredValue)}.`,
+    `${numberFormat.format(metrics.currentCount)} estão em acompanhamento, ${numberFormat.format(metrics.expiredCount)} estão vencidos e ${numberFormat.format(metrics.closedCount)} estão encerrados ou concluídos.`,
+    `${numberFormat.format(metrics.due30)} contrato(s) vencem em até 30 dias e ${numberFormat.format(metrics.due90)} vencem em até 90 dias.`,
+    qualityText,
+    `Última atualização da base: ${formatUpdatedAt(metrics.updatedAt, true)}.`,
+    filterText,
+  ].join(" ");
+}
+
+function formatActiveFiltersForSummary() {
+  const filters = [];
+  if (state.search) filters.push(`busca "${elements.searchInput.value.trim()}"`);
+  if (state.status !== SELECT_ALL) filters.push(`status ${state.status}`);
+  if (state.prazo !== SELECT_ALL) filters.push(`prazo ${elements.prazoFilter.options[elements.prazoFilter.selectedIndex].text}`);
+  if (state.modalidade !== SELECT_ALL) filters.push(`modalidade ${state.modalidade}`);
+  if (state.gestor !== SELECT_ALL) filters.push(`gestor ${state.gestor}`);
+  if (state.fiscal !== SELECT_ALL) filters.push(`fiscal ${state.fiscal}`);
+  if (state.ano !== SELECT_ALL) filters.push(`ano ${state.ano}`);
+  return filters.join("; ");
+}
+
+function getDueMonthData(rows) {
+  const map = new Map();
+  rows.forEach((item) => {
+    if (!item.dataVencimentoDate) return;
+    const key = `${item.dataVencimentoDate.getUTCFullYear()}-${String(item.dataVencimentoDate.getUTCMonth() + 1).padStart(2, "0")}`;
+    const label = capitalizeFirst(monthFormat.format(item.dataVencimentoDate).replace(".", ""));
+    const current = map.get(key) || { key, label, value: 0 };
+    current.value += 1;
+    map.set(key, current);
   });
+  return [...map.values()].sort((a, b) => a.key.localeCompare(b.key)).slice(0, 12);
+}
+
+function getDeadlineDistribution(rows) {
+  const buckets = [
+    { key: "vencido", label: "Vencidos", color: "#b7443e" },
+    { key: "hoje", label: "Vence hoje", color: "#d35f1f" },
+    { key: "30", label: "Até 30 dias", color: "#bd7619" },
+    { key: "90", label: "31 a 90 dias", color: "#2f6f9f" },
+    { key: "futuro", label: "Mais de 90 dias", color: "#24715d" },
+    { key: "sem-data", label: "Sem vencimento", color: "#70578e" },
+  ];
+  return buckets
+    .map((bucket) => ({
+      ...bucket,
+      value: rows.filter((item) => item.businessStatus.prazoBucket === bucket.key).length,
+    }))
+    .filter((item) => item.value > 0);
+}
+
+function renderChart(canvasId, emptyId, config, hasData) {
+  const canvas = document.getElementById(canvasId);
+  const empty = document.getElementById(emptyId);
+  if (!canvas) return;
+
+  if (!hasData) {
+    if (charts[canvasId]) {
+      charts[canvasId].destroy();
+      delete charts[canvasId];
+    }
+    canvas.hidden = true;
+    if (empty) empty.hidden = false;
+    return;
+  }
+
+  canvas.hidden = false;
+  if (empty) empty.hidden = true;
+  upsertChart(canvasId, config);
 }
 
 function renderActiveFilters() {
@@ -489,13 +829,13 @@ function renderActiveFilters() {
   `).join("");
 }
 
-function renderResultSummary(filteredTotal, currentTotal, expiredTotal, completedTotal) {
+function renderResultSummary(metrics) {
   const prefix = getActiveFilterCount() ? "resultado(s) encontrado(s)" : "contrato(s) na base";
   elements.resultSummary.textContent = [
-    `${numberFormat.format(filteredTotal)} ${prefix}`,
-    `${numberFormat.format(currentTotal)} em acompanhamento`,
-    `${numberFormat.format(expiredTotal)} vencido(s)`,
-    `${numberFormat.format(completedTotal)} encerrado(s)/concluído(s)`,
+    `${numberFormat.format(metrics.filteredContracts)} ${prefix}`,
+    `${numberFormat.format(metrics.currentCount)} em acompanhamento`,
+    `${numberFormat.format(metrics.expiredCount)} vencido(s)`,
+    `${numberFormat.format(metrics.closedCount)} encerrado(s)/concluído(s)`,
   ].join(" · ");
 }
 
@@ -504,6 +844,131 @@ function updateFilterControls() {
   elements.filterCountBadge.hidden = count === 0;
   elements.filterCountBadge.textContent = count ? numberFormat.format(count) : "";
   elements.clearFiltersBtn.disabled = !hasActiveAdjustments();
+}
+
+function updateActionControls(rowCount) {
+  elements.exportCsvBtn.disabled = rowCount === 0;
+  elements.copySummaryBtn.disabled = !viewState.summaryText;
+}
+
+async function copyCurrentSummary() {
+  const text = viewState.summaryText || buildTextSummary(viewState.metrics);
+  const ok = await writeClipboard(text);
+  showActionFeedback(ok ? "Resumo copiado para a área de transferência." : "Não foi possível copiar automaticamente.");
+}
+
+function exportFilteredCsv() {
+  const rows = getRowsForExport();
+  if (!rows.length) {
+    showActionFeedback("Não há contratos para exportar neste recorte.");
+    return;
+  }
+
+  const csv = buildCsv(rows);
+  const filename = `contratos-iguape-recorte-${formatFileDate(new Date())}.csv`;
+  downloadTextFile(filename, csv, "text/csv;charset=utf-8");
+  showActionFeedback(`${numberFormat.format(rows.length)} contrato(s) exportado(s) em CSV.`);
+}
+
+function getRowsForExport() {
+  return [...viewState.currentRows, ...viewState.expiredRows, ...viewState.completedRows];
+}
+
+function buildCsv(rows) {
+  const columns = [
+    ["id", "ID"],
+    ["contrato", "Contrato"],
+    ["processo", "Processo"],
+    ["objeto", "Objeto"],
+    ["empresa", "Empresa"],
+    ["modalidade", "Modalidade"],
+    ["valor", "Valor numérico"],
+    ["valorFormatado", "Valor"],
+    ["dataVencimento", "Data de vencimento"],
+    ["diasAtual", "Dias até o vencimento"],
+    ["statusPainel", "Status do painel"],
+    ["statusPlanilha", "Status da planilha"],
+    ["gestor", "Gestor"],
+    ["fiscal", "Fiscal"],
+    ["observacoes", "Observações"],
+  ];
+
+  const header = columns.map(([, label]) => csvValue(label)).join(",");
+  const body = rows.map((item) => columns.map(([key]) => csvValue(getCsvField(item, key))).join(","));
+  return [header, ...body].join("\r\n");
+}
+
+function getCsvField(item, key) {
+  const values = {
+    id: item.id ?? "",
+    contrato: item.display.contrato,
+    processo: item.display.processo,
+    objeto: item.display.objeto,
+    empresa: item.display.empresa,
+    modalidade: item.display.modalidade,
+    valor: toFiniteNumber(item.valor) ?? "",
+    valorFormatado: item.display.valor,
+    dataVencimento: item.dataVencimento || FIELD_FALLBACKS.dataVencimento,
+    diasAtual: item.diasAtual ?? "",
+    statusPainel: item.businessStatus.label,
+    statusPlanilha: item.display.statusSource,
+    gestor: item.display.gestor,
+    fiscal: item.display.fiscal,
+    observacoes: getFieldText(item.observacoes, ""),
+  };
+  return values[key] ?? "";
+}
+
+function csvValue(value) {
+  const text = String(value ?? "");
+  return `"${text.replace(/"/g, "\"\"")}"`;
+}
+
+function downloadTextFile(filename, content, type) {
+  const blob = new Blob(["\ufeff", content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.rel = "noopener";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function writeClipboard(text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Fallback abaixo.
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.className = "clipboard-buffer";
+  document.body.append(textarea);
+  textarea.select();
+  let ok = false;
+  try {
+    ok = document.execCommand("copy");
+  } catch {
+    ok = false;
+  }
+  textarea.remove();
+  return ok;
+}
+
+function showActionFeedback(message) {
+  window.clearTimeout(actionFeedbackTimer);
+  elements.actionFeedback.textContent = message;
+  actionFeedbackTimer = window.setTimeout(() => {
+    elements.actionFeedback.textContent = "";
+  }, 3200);
 }
 
 function getActiveFilterCount() {
@@ -920,7 +1385,7 @@ function buildDisplayFields(record, dataVencimento, businessStatus) {
     modalidade: getFieldText(record.modalidade, FIELD_FALLBACKS.modalidade),
     gestor: getFieldText(record.gestor, FIELD_FALLBACKS.gestor),
     fiscal: getFieldText(record.fiscal, FIELD_FALLBACKS.fiscal),
-    valor: formatCurrency(record.valor),
+    valor: formatContractValue(record.valor),
     dataVencimento: formatDate(dataVencimento),
     statusSource: getFieldText(record.status, FIELD_FALLBACKS.status),
     status: businessStatus.label,
@@ -932,7 +1397,7 @@ function buildDisplayFields(record, dataVencimento, businessStatus) {
       modalidade: isBlank(record.modalidade),
       gestor: isBlank(record.gestor),
       fiscal: isBlank(record.fiscal),
-      valor: toFiniteNumber(record.valor) === null,
+      valor: hasMissingContractValue(record),
       dataVencimento: !dataVencimento,
       status: isBlank(record.status),
     },
@@ -1193,6 +1658,17 @@ function formatUpdatedAt(value, withSeconds = false) {
   });
 }
 
+function formatShortUpdatedAt(value) {
+  if (!value) return "Sem data";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Sem data";
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  });
+}
+
 function formatDays(days) {
   if (days === null || Number.isNaN(days)) return FIELD_FALLBACKS.dataVencimento;
   if (days < 0) return `vencido há ${formatDayCount(Math.abs(days))}`;
@@ -1272,10 +1748,41 @@ function formatCurrency(value, fallback = FIELD_FALLBACKS.valor) {
   return amount === null ? fallback : currency.format(amount);
 }
 
+function formatContractValue(value) {
+  return hasMissingContractValue(value) ? FIELD_FALLBACKS.valor : formatCurrency(value);
+}
+
+function hasMissingContractValue(itemOrValue) {
+  const value = typeof itemOrValue === "object" && itemOrValue !== null ? itemOrValue.valor : itemOrValue;
+  const amount = toFiniteNumber(value);
+  return amount === null || amount <= 0;
+}
+
 function toFiniteNumber(value) {
   if (value === null || value === undefined || value === "") return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function getPercent(count, total) {
+  return total > 0 ? (count / total) * 100 : 0;
+}
+
+function formatPercent(count, total) {
+  return `${getPercent(count, total).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+}
+
+function formatFileDate(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function capitalizeFirst(value) {
+  const text = String(value || "");
+  return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}` : text;
 }
 
 function isSmallViewport() {
@@ -1365,6 +1872,36 @@ function horizontalBarOptions(currencyAxis = false) {
           },
         },
         grid: { display: false },
+      },
+    },
+  };
+}
+
+function verticalBarOptions(currencyAxis = false) {
+  const small = isSmallViewport();
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: commonPlugins(),
+    animation: chartAnimation(),
+    scales: {
+      x: {
+        ticks: {
+          maxRotation: small ? 45 : 0,
+          autoSkip: true,
+          callback(value) {
+            return shortLabel(this.getLabelForValue(value), small ? 12 : 18);
+          },
+        },
+        grid: { display: false },
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          precision: 0,
+          callback: (value) => currencyAxis ? compactCurrency(Number(value)) : numberFormat.format(value),
+        },
+        grid: { color: "#edf1ed" },
       },
     },
   };

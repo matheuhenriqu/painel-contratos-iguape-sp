@@ -127,12 +127,50 @@
         <section id="kpiGrid" class="kpi-grid" aria-label="Indicadores"></section>
         <section id="insightGrid" class="insight-grid" aria-label="Leituras rápidas"></section>
 
+        <section class="panel summary-panel" aria-labelledby="summaryTitle">
+          <div class="panel-header summary-header">
+            <div>
+              <h2 id="summaryTitle">Resumo do recorte atual</h2>
+              <p id="summaryHint">Síntese automática dos dados filtrados.</p>
+            </div>
+            <div class="action-toolbar" aria-label="Exportações e relatório">
+              <button id="copySummaryBtn" class="ghost-button" type="button">
+                <i data-lucide="copy"></i>
+                <span>Copiar resumo</span>
+              </button>
+              <button id="exportCsvBtn" class="ghost-button" type="button">
+                <i data-lucide="file-down"></i>
+                <span>Exportar CSV</span>
+              </button>
+              <button id="printReportBtn" class="ghost-button" type="button">
+                <i data-lucide="printer"></i>
+                <span>Imprimir</span>
+              </button>
+            </div>
+          </div>
+          <p id="autoSummary" class="auto-summary" aria-live="polite"></p>
+          <p id="actionFeedback" class="action-feedback" aria-live="polite"></p>
+        </section>
+
+        <div class="section-heading compact">
+          <div>
+            <span>Qualidade dos dados</span>
+            <h2>Completude cadastral</h2>
+          </div>
+          <p>Alertas discretos para apoiar revisão de contratos com campos incompletos.</p>
+        </div>
+
+        <section class="quality-panel panel">
+          <div id="qualityGrid" class="quality-grid" aria-label="Indicadores de qualidade dos dados"></div>
+          <div id="qualityAlerts" class="quality-alerts" aria-live="polite"></div>
+        </section>
+
         <div class="section-heading compact">
           <div>
             <span>Análise visual</span>
             <h2>Distribuição dos contratos</h2>
           </div>
-          <p>Leitura rápida por situação cadastral e por modalidade de contratação.</p>
+          <p>Leitura rápida por status, prazos, modalidades, empresas e qualidade cadastral.</p>
         </div>
 
         <section class="analytics-grid">
@@ -146,6 +184,7 @@
             </div>
             <div class="chart-frame">
               <canvas id="statusChart"></canvas>
+              <p id="statusChartEmpty" class="chart-empty" hidden>Sem dados para exibir neste recorte.</p>
             </div>
           </article>
 
@@ -159,6 +198,91 @@
             </div>
             <div class="chart-frame">
               <canvas id="modalidadeChart"></canvas>
+              <p id="modalidadeChartEmpty" class="chart-empty" hidden>Sem valores por modalidade neste recorte.</p>
+            </div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Contratos por modalidade</h2>
+                <p id="modalidadeCountChartHint"></p>
+              </div>
+              <i data-lucide="layers-3"></i>
+            </div>
+            <div class="chart-frame">
+              <canvas id="modalidadeCountChart"></canvas>
+              <p id="modalidadeCountChartEmpty" class="chart-empty" hidden>Sem contratos por modalidade neste recorte.</p>
+            </div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Vencimentos por mês</h2>
+                <p id="dueMonthChartHint"></p>
+              </div>
+              <i data-lucide="calendar-days"></i>
+            </div>
+            <div class="chart-frame">
+              <canvas id="dueMonthChart"></canvas>
+              <p id="dueMonthChartEmpty" class="chart-empty" hidden>Sem vencimentos datados neste recorte.</p>
+            </div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Empresas por valor</h2>
+                <p id="companyValueChartHint"></p>
+              </div>
+              <i data-lucide="building-2"></i>
+            </div>
+            <div class="chart-frame">
+              <canvas id="companyValueChart"></canvas>
+              <p id="companyValueChartEmpty" class="chart-empty" hidden>Sem valores por empresa neste recorte.</p>
+            </div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Empresas por quantidade</h2>
+                <p id="companyCountChartHint"></p>
+              </div>
+              <i data-lucide="list-ordered"></i>
+            </div>
+            <div class="chart-frame">
+              <canvas id="companyCountChart"></canvas>
+              <p id="companyCountChartEmpty" class="chart-empty" hidden>Sem empresas neste recorte.</p>
+            </div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Distribuição por prazo</h2>
+                <p id="deadlineChartHint"></p>
+              </div>
+              <i data-lucide="timer"></i>
+            </div>
+            <div class="chart-frame">
+              <canvas id="deadlineChart"></canvas>
+              <p id="deadlineChartEmpty" class="chart-empty" hidden>Sem prazos neste recorte.</p>
+            </div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Qualidade cadastral</h2>
+                <p id="qualityChartHint"></p>
+              </div>
+              <i data-lucide="clipboard-check"></i>
+            </div>
+            <div class="chart-frame">
+              <canvas id="qualityChart"></canvas>
+              <p id="qualityChartEmpty" class="chart-empty" hidden>Sem dados de qualidade neste recorte.</p>
             </div>
           </article>
         </section>

@@ -5,11 +5,14 @@ Dashboard estática para acompanhamento dos contratos importados de `contratos.x
 ## Recursos
 
 - Indicadores de quantidade, valor total, contratos vigentes, vencidos e próximos de vencer.
+- KPIs ampliados para valor filtrado, vencimentos em até 30/90 dias, contratos sem gestor, sem fiscal, sem vencimento, sem valor e sem empresa.
+- Seção de qualidade cadastral com percentuais, registros incompletos e alertas de inconsistências.
 - Filtros por busca inteligente, recortes rápidos, status, prazo, modalidade, gestor, fiscal e ano de vencimento, com remoção individual dos filtros ativos.
 - Query params para preservar e compartilhar busca, filtros, ordenação e modo compacto.
 - Leituras rápidas para próximo vencimento, maior contrato, cadastros sem responsável e valor vencido.
 - Critério claro entre vencidos por prazo aberto, contratos encerrados, concluídos, sem data e sem informação suficiente.
-- Gráficos de status e valor por modalidade.
+- Gráficos de status, modalidades, vencimentos por mês, empresas por valor/quantidade, prazos e qualidade cadastral.
+- Exportação CSV dos dados filtrados, cópia do resumo textual e impressão da visão atual.
 - Tabela principal para contratos vigentes e em acompanhamento, com prazos e pendências destacados por cor.
 - Áreas separadas e recolhíveis para vencidos, encerrados e concluídos.
 - Tabelas ordenáveis por vencimento, valor, contrato, processo, objeto, empresa, modalidade, status, gestor e fiscal.
