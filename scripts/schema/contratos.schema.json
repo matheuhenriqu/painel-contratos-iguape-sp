@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/scripts/schema/contratos.schema.json",
+  "title": "Base de contratos de Iguape/SP",
+  "type": "object",
+  "required": ["source", "sheet", "generatedAt", "recordCount", "records"],
+  "additionalProperties": true,
+  "properties": {
+    "source": { "type": ["string", "null"] },
+    "sheet": { "type": ["string", "null"] },
+    "generatedAt": {
+      "type": "string",
+      "minLength": 10
+    },
+    "recordCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "records": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/contract" }
+    }
+  },
+  "$defs": {
+    "isoDate": {
+      "type": ["string", "null"],
+      "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$"
+    },
+    "nullableText": {
+      "type": ["string", "null"]
+    },
+    "contract": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "modalidade": { "$ref": "#/$defs/nullableText" },
+        "numeroModalidade": { "$ref": "#/$defs/nullableText" },
+        "objeto": { "$ref": "#/$defs/nullableText" },
+        "processo": { "$ref": "#/$defs/nullableText" },
+        "contrato": { "$ref": "#/$defs/nullableText" },
+        "empresa": { "$ref": "#/$defs/nullableText" },
+        "valor": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "valorDescricao": { "$ref": "#/$defs/nullableText" },
+        "dataInicio": { "$ref": "#/$defs/isoDate" },
+        "dataVencimento": { "$ref": "#/$defs/isoDate" },
+        "diasPlanilha": {
+          "type": ["number", "null"]
+        },
+        "status": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "Aguardando",
+            "Atenção",
+            "Ativo",
+            "Em Andamento",
+            "Encerrado",
+            "Finalizado",
+            "Fracassado",
+            "Indefinido",
+            "Licitando",
+            "Não Assinou",
+            "Publicado",
+            "Suspenso",
+            "Vence em breve",
+            "Vencido"
+          ]
+        },
+        "gestor": { "$ref": "#/$defs/nullableText" },
+        "fiscal": { "$ref": "#/$defs/nullableText" },
+        "observacoes": { "$ref": "#/$defs/nullableText" }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://matheuhenriqu.github.io/painel-contratos-iguape-sp/sitemap.xml

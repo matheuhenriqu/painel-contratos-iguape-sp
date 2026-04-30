@@ -1,0 +1,249 @@
+/* gráficos */
+
+.analytics-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.chart-frame {
+  min-height: 300px;
+  position: relative;
+}
+
+.chart-frame canvas {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+}
+
+.chart-frame.is-chart-pending::before {
+  animation: chart-skeleton 1.15s linear infinite;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.48), transparent),
+    linear-gradient(135deg, var(--color-surface-muted), var(--color-border));
+  background-size:
+    220% 100%,
+    100% 100%;
+  border-radius: 8px;
+  content: '';
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.chart-frame.is-chart-pending::after {
+  color: var(--muted);
+  content: 'Carregando gráfico...';
+  display: grid;
+  font-size: 0.86rem;
+  font-weight: 800;
+  inset: 0;
+  place-items: center;
+  position: absolute;
+  z-index: 2;
+}
+
+.chart-empty {
+  background: #fbfdfc;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  display: grid;
+  font-size: 0.86rem;
+  font-weight: 700;
+  inset: 0;
+  margin: 0;
+  padding: 18px;
+  place-items: center;
+  position: absolute;
+  text-align: center;
+}
+
+.chart-frame canvas.is-drilldown-ready {
+  cursor: pointer;
+}
+
+.advanced-analytics-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.advanced-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.timeline-panel,
+.comparison-panel {
+  grid-column: 1 / -1;
+}
+
+.advanced-panel-header {
+  align-items: start;
+  margin-bottom: 0;
+}
+
+.visual-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.timeline-toolbar,
+.comparison-sort {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  font-weight: 760;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.timeline-toolbar span {
+  min-width: 118px;
+  text-align: center;
+}
+
+.visual-scroll {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.advanced-svg {
+  color: var(--ink);
+  display: block;
+  font-family: var(--font-family-sans);
+  height: auto;
+  min-width: 720px;
+  width: 100%;
+}
+
+.timeline-svg {
+  min-height: 360px;
+}
+
+.heatmap-svg,
+.treemap-svg {
+  min-height: 330px;
+}
+
+.comparison-svg {
+  min-height: 280px;
+}
+
+.advanced-svg text {
+  fill: var(--color-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.advanced-svg .muted-label {
+  fill: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.advanced-svg .solid-label {
+  fill: var(--color-on-solid);
+}
+
+.advanced-svg .axis-line,
+.advanced-svg .grid-line {
+  stroke: var(--color-border);
+}
+
+.advanced-svg [role='button'],
+.advanced-svg [tabindex='0'] {
+  cursor: pointer;
+}
+
+.advanced-svg [role='button']:focus-visible,
+.advanced-svg [tabindex='0']:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.comparison-tables {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+}
+
+.comparison-tables > * {
+  min-width: 0;
+}
+
+.comparison-table {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.comparison-table table {
+  min-width: 560px;
+}
+
+.comparison-table caption {
+  color: var(--ink);
+  font-weight: 850;
+  padding: 12px;
+  text-align: left;
+}
+
+.comparison-table progress {
+  background: var(--color-border);
+  border: 0;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.comparison-table progress::-webkit-progress-bar {
+  background: var(--color-border);
+}
+
+.comparison-table progress::-webkit-progress-value,
+.comparison-table progress::-moz-progress-bar {
+  background: var(--color-brand);
+}
+
+.visual-empty {
+  color: var(--muted);
+  display: grid;
+  font-size: 0.86rem;
+  font-weight: 800;
+  min-height: 180px;
+  place-items: center;
+  text-align: center;
+}
+
+@keyframes chart-skeleton {
+  from {
+    background-position:
+      100% 0,
+      0 0;
+  }
+
+  to {
+    background-position:
+      -120% 0,
+      0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-frame.is-chart-pending::before {
+    animation: none;
+  }
+}

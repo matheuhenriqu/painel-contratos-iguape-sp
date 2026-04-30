@@ -1,0 +1,127 @@
+:root {
+  color-scheme: light;
+
+  --font-family-sans:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs: 0.79rem;
+  --font-size-sm: 0.889rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.266rem;
+  --font-size-2xl: 1.424rem;
+  --font-size-3xl: 1.602rem;
+  --font-weight-medium: 650;
+  --font-weight-semibold: 760;
+  --font-weight-bold: 850;
+
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 999px;
+
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
+  --duration-slow: 320ms;
+
+  --color-iguape-green-900: #0f3e32;
+  --color-iguape-green-800: #155f49;
+  --color-iguape-green-700: #16664f;
+  --color-iguape-green-500: #2faa83;
+  --color-iguape-teal-700: #0c756e;
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #fbfdfc;
+  --color-neutral-100: #f5f8f6;
+  --color-neutral-200: #edf3f0;
+  --color-neutral-300: #d5dfda;
+  --color-neutral-500: #5d6b66;
+  --color-neutral-800: #14231f;
+  --color-neutral-950: #0e1414;
+  --color-gold-600: #805000;
+  --color-red-700: #a33a35;
+  --color-blue-700: #266485;
+  --color-plum-700: #66547f;
+
+  --color-bg: var(--color-neutral-200);
+  --color-bg-canvas: var(--color-neutral-0);
+  --color-surface: var(--color-neutral-0);
+  --color-surface-muted: var(--color-neutral-50);
+  --color-surface-accent: #e7efeb;
+  --color-text: var(--color-neutral-800);
+  --color-text-muted: var(--color-neutral-500);
+  --color-text-strong: #233831;
+  --color-border: var(--color-neutral-300);
+  --color-border-strong: #b8c9c1;
+  --color-brand: var(--color-iguape-green-800);
+  --color-brand-strong: var(--color-iguape-green-900);
+  --color-brand-contrast: #ffffff;
+  --color-success: var(--color-iguape-green-800);
+  --color-warning: var(--color-gold-600);
+  --color-danger: var(--color-red-700);
+  --color-info: var(--color-blue-700);
+  --color-plum: var(--color-plum-700);
+  --color-focus-ring: var(--color-iguape-teal-700);
+  --color-focus-ring-soft: rgba(12, 117, 110, 0.22);
+  --color-link: var(--color-brand);
+  --color-on-solid: #ffffff;
+  --color-topbar-text: #ffffff;
+  --color-topbar-muted: rgba(255, 255, 255, 0.78);
+  --color-topbar-border: rgba(255, 255, 255, 0.14);
+  --color-topbar-bg: #0f3e32;
+  --color-logo-frame-bg: rgba(255, 255, 255, 0.94);
+  --color-logo-frame-border: rgba(255, 255, 255, 0.28);
+  --color-brand-soft: #eef7f2;
+  --color-success-soft: #e8f3ed;
+  --color-warning-soft: #fff7e8;
+  --color-warning-border: #edd6b8;
+  --color-danger-soft: #fde9e6;
+  --color-info-soft: #e6f4f8;
+  --color-neutral-soft: #eef3f0;
+  --color-table-head-bg: #edf4f0;
+  --color-table-row-hover: #fbfdfc;
+  --color-page-background:
+    linear-gradient(180deg, #ffffff 0, #ffffff 84px, rgba(237, 243, 240, 0.84) 360px),
+    linear-gradient(
+      135deg,
+      rgba(21, 95, 73, 0.055),
+      rgba(195, 154, 50, 0.045) 58%,
+      rgba(38, 100, 133, 0.045)
+    );
+
+  --shadow-sm: 0 1px 0 rgba(18, 62, 86, 0.04);
+  --shadow-md: 0 6px 16px rgba(16, 56, 78, 0.06);
+  --shadow-lg: 0 10px 24px rgba(16, 56, 78, 0.08);
+
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
+  --surface-2: var(--color-surface-muted);
+  --surface-3: var(--color-surface-accent);
+  --ink: var(--color-text);
+  --muted: var(--color-text-muted);
+  --line: var(--color-border);
+  --line-strong: var(--color-border-strong);
+  --green: var(--color-brand);
+  --teal: var(--color-iguape-teal-700);
+  --amber: var(--color-warning);
+  --red: var(--color-danger);
+  --plum: var(--color-plum);
+  --blue: var(--color-info);
+  --navy: var(--color-blue-700);
+  --gold: #c39a32;
+  --header: var(--color-brand-strong);
+  --header-2: var(--color-brand);
+  --shadow: var(--shadow-lg);
+  --shadow-soft: var(--shadow-md);
+  --ring: 0 0 0 4px var(--color-focus-ring-soft);
+}

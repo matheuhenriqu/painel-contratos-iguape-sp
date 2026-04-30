@@ -1,0 +1,38 @@
+{
+  "name": "painel-contratos-iguape-sp",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Painel estático de contratos da Prefeitura Municipal de Iguape/SP.",
+  "scripts": {
+    "serve": "python3 -m http.server 4173",
+    "lint": "eslint . && prettier --check . && stylelint \"src/css/**/*.css\" && htmlhint index.html offline.html && markdownlint \"**/*.md\" --ignore node_modules --ignore coverage --ignore playwright-report",
+    "lint:fix": "eslint . --fix && prettier --write . && stylelint \"src/css/**/*.css\" --fix && markdownlint \"**/*.md\" --ignore node_modules --ignore coverage --ignore playwright-report --fix",
+    "test": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "validate:data": "node scripts/validate_data.mjs data/contratos.js",
+    "axe:audit": "node scripts/axe-audit.mjs",
+    "lhci": "lhci autorun"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@eslint/js": "^9.25.1",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.51.1",
+    "@vitest/coverage-v8": "^3.1.2",
+    "ajv": "^8.17.1",
+    "axe-core": "^4.10.3",
+    "eslint": "^9.25.1",
+    "globals": "^16.0.0",
+    "htmlhint": "^1.6.3",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
+    "markdownlint-cli": "^0.44.0",
+    "playwright": "^1.51.1",
+    "prettier": "^3.5.3",
+    "stylelint": "^16.18.0",
+    "stylelint-config-recommended": "^16.0.0",
+    "stylelint-order": "^6.0.4",
+    "vitest": "^3.1.2",
+    "xlsx": "^0.18.5"
+  }
+}

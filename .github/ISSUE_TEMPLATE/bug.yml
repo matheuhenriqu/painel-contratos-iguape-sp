@@ -1,0 +1,38 @@
+name: Relatar bug
+description: Informe uma falha funcional, visual, de acessibilidade ou de dados.
+title: 'fix: '
+labels: ['bug']
+body:
+  - type: textarea
+    id: resumo
+    attributes:
+      label: Resumo
+      description: O que aconteceu?
+      placeholder: Descreva a falha observada.
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      description: Liste a sequência mínima para chegar ao problema.
+      placeholder: "1. Acesse...\n2. Clique em...\n3. Observe..."
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Resultado esperado
+      placeholder: Explique como o painel deveria se comportar.
+    validations:
+      required: true
+  - type: input
+    id: navegador
+    attributes:
+      label: Navegador e dispositivo
+      placeholder: 'Chrome 124 no Windows, Safari iOS, etc.'
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Evidências
+      description: Cole prints, URLs com filtros ou mensagens do console.

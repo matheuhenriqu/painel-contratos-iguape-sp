@@ -1,0 +1,114 @@
+/* formulários */
+
+.field {
+  color: var(--muted);
+  display: grid;
+  font-size: 0.8rem;
+  font-weight: 780;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.field input,
+.field select {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  min-height: 40px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+  width: 100%;
+}
+
+.field select {
+  padding: 0 36px 0 10px;
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: var(--line-strong);
+}
+
+.input-shell {
+  position: relative;
+}
+
+.input-shell svg {
+  color: var(--muted);
+  height: 17px;
+  left: 11px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+}
+
+.input-shell input {
+  padding: 0 40px 0 36px;
+}
+
+.input-clear-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--muted);
+  display: inline-flex;
+  height: 28px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+}
+
+.input-clear-button:hover {
+  background: var(--surface-3);
+  color: var(--green);
+}
+
+.input-clear-button svg {
+  height: 15px;
+  position: static;
+  transform: none;
+  width: 15px;
+}
+
+.sort-control {
+  align-items: center;
+  color: var(--muted);
+  display: grid;
+  font-size: 0.74rem;
+  font-weight: 850;
+  gap: 8px;
+  grid-template-columns: auto minmax(148px, 1fr);
+  text-transform: uppercase;
+}
+
+.sort-control select {
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 750;
+  min-height: 34px;
+  padding: 0 34px 0 10px;
+  text-transform: none;
+}
+
+.missing-field {
+  background: #fffaf1;
+  color: #7c6250;
+}
+
+.missing-field .reference-code {
+  background: #fff7e8;
+  border-color: #edd6b8;
+  color: #7a4c0f;
+}

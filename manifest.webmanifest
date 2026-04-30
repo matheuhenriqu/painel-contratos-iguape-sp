@@ -1,0 +1,33 @@
+{
+  "name": "Painel de Contratos — Iguape/SP",
+  "short_name": "Contratos Iguape",
+  "version": "2.0.0",
+  "description": "Painel público e estático para consulta, transparência e acompanhamento dos contratos da Prefeitura Municipal de Iguape/SP.",
+  "lang": "pt-BR",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0e1414",
+  "theme_color": "#16664f",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["government", "productivity", "utilities"]
+}

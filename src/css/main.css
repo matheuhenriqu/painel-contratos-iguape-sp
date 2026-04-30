@@ -1,0 +1,16 @@
+@import url('./tokens.css');
+@import url('./partials/base.css');
+@import url('./partials/layout.css');
+@import url('./partials/topbar.css');
+@import url('./partials/buttons.css');
+@import url('./partials/forms.css');
+@import url('./partials/filters.css');
+@import url('./partials/kpis.css');
+@import url('./partials/panels.css');
+@import url('./partials/charts.css');
+@import url('./partials/badges.css');
+@import url('./partials/tables.css');
+@import url('./partials/footer.css');
+@import url('./partials/responsive.css');
+@import url('./themes.css');
+@import url('./partials/print.css');

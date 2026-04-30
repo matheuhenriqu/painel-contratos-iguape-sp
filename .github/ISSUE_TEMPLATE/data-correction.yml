@@ -1,0 +1,34 @@
+name: Correção de dados
+description: Solicite ajuste em contrato, valor, prazo, gestor, fiscal ou status.
+title: 'data: '
+labels: ['dados']
+body:
+  - type: input
+    id: contrato
+    attributes:
+      label: Contrato ou processo
+      placeholder: 'CT 000/2026 ou processo 000/2026'
+    validations:
+      required: true
+  - type: textarea
+    id: campo
+    attributes:
+      label: Campo com problema
+      description: Informe o campo, valor atual e valor correto.
+      placeholder: "Campo: fiscal\nAtual: vazio\nCorreto: Nome da pessoa"
+    validations:
+      required: true
+  - type: textarea
+    id: fonte
+    attributes:
+      label: Fonte de conferência
+      description: Aponte documento, planilha, publicação ou evidência pública.
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmacao
+    attributes:
+      label: Confirmação
+      options:
+        - label: A correção não contém dado pessoal sensível nem informação sigilosa.
+          required: true

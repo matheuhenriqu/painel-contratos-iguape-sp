@@ -1,0 +1,154 @@
+/* botões */
+
+.icon-button,
+.mobile-view-toggle,
+.row-detail-button,
+.contract-card-action {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--color-brand-strong);
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 800;
+  gap: 7px;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.icon-button {
+  min-height: 40px;
+  padding: 0;
+  width: 40px;
+}
+
+.row-detail-button {
+  min-height: 30px;
+  padding: 3px 7px;
+}
+
+.row-detail-button svg,
+.icon-button svg {
+  height: 16px;
+  width: 16px;
+}
+
+.mobile-view-toggle {
+  display: none;
+}
+
+.ghost-button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 1px 0 rgba(18, 62, 86, 0.04);
+  color: var(--color-brand-strong);
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 10px;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.ghost-button:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-soft);
+}
+
+.ghost-button:disabled:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+.mini-action-button {
+  color: var(--color-brand-strong);
+  flex: 0 0 auto;
+  padding: 0 10px;
+}
+
+.mini-action-button.danger {
+  color: var(--red);
+}
+
+.mini-action-button svg {
+  height: 16px;
+  width: 16px;
+}
+
+.sort-dir-button,
+.pager-button,
+.density-button,
+.mobile-view-toggle,
+.section-toggle-button,
+.floating-top-button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--color-brand-strong);
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 800;
+  gap: 7px;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 10px;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.density-button.is-active {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+.sort-dir-button.is-desc svg {
+  transform: rotate(180deg);
+}
+
+.section-toggle-button {
+  flex: 0 0 auto;
+  padding: 0;
+  width: 36px;
+}
+
+.section-toggle-button svg {
+  transition: transform 180ms ease;
+}
+
+.is-section-collapsed .section-toggle-button svg {
+  transform: rotate(-90deg);
+}
+
+.floating-top-button {
+  animation: rise-in 220ms ease both;
+  background: var(--green);
+  border-color: transparent;
+  border-radius: 999px;
+  bottom: clamp(14px, 2vw, 28px);
+  box-shadow: 0 10px 24px rgba(16, 56, 78, 0.18);
+  color: #fff;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  position: fixed;
+  right: clamp(14px, 2vw, 28px);
+  width: 44px;
+  z-index: 20;
+}
+
+.floating-top-button svg {
+  height: 18px;
+  width: 18px;
+}
