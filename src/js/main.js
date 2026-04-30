@@ -39,7 +39,6 @@ import { renderQuality } from './ui/quality.js';
 import { setupSavedFilters } from './ui/saved-filters.js';
 import { setupSectionToggles } from './ui/section-toggles.js';
 import { copyCurrentSummary, renderAutoSummary, updateActionControls } from './ui/summary.js';
-import { setupTheme } from './ui/theme.js';
 import { shareCurrentView } from './ui/share.js';
 import { renderUrgencyBanner, setupUrgencyBanner } from './ui/urgency.js';
 import { setupServiceWorker } from './pwa/service-worker-registration.js';
@@ -97,7 +96,6 @@ async function init() {
   syncSortControls(context);
   applyDensityMode(context);
   configureFilterPanel(context);
-  setupTheme(context);
   bindEvents();
   setupServiceWorker(context);
   render();
@@ -132,10 +130,6 @@ function bindEvents() {
     syncSortControls(context);
     applyDensityMode(context);
     resetVisibleLimit();
-    render({ syncUrl: false });
-  });
-
-  window.addEventListener('theme:changed', () => {
     render({ syncUrl: false });
   });
 }

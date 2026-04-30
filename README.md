@@ -27,9 +27,9 @@ Painel público, estático e instalável para transparência, consulta e gestão
 
 ## Demonstração
 
-| Tema escuro                                                | Mobile                                                           |
+| Tema claro                                                 | Mobile                                                           |
 | ---------------------------------------------------------- | ---------------------------------------------------------------- |
-| ![Painel em tema escuro](docs/screenshots/painel-dark.png) | ![Painel em viewport mobile](docs/screenshots/painel-mobile.png) |
+| ![Painel em tema claro](docs/screenshots/painel-light.png) | ![Painel em viewport mobile](docs/screenshots/painel-mobile.png) |
 
 ![Demonstração de filtros e detalhe de contrato](docs/screenshots/demo.gif)
 
@@ -117,7 +117,7 @@ O CI executa lint, testes unitários, Playwright, validação de dados, axe-core
 
 - Etapa 0: diagnóstico, baseline e fundação do repositório.
 - Etapa 1: modularização ES Modules nativos.
-- Etapa 2: design system com temas claro, escuro, alto contraste e automático.
+- Etapa 2: design system em modo claro com paleta oficial da Prefeitura de Iguape.
 - Etapa 3: PWA, SEO e metadados estruturados.
 - Etapa 4: performance, sprite SVG, lazy-load, virtualização e worker.
 - Etapa 5: UX avançada com drawer, cards, atalhos, favoritos e busca avançada.

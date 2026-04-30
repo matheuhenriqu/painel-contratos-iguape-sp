@@ -13,7 +13,6 @@ export const BREAKPOINTS = {
 
 export const STORAGE_KEYS = {
   compactRows: 'contratosIguapeCompactRows',
-  theme: 'painel.theme',
   viewMode: 'painel.viewMode',
   savedFilters: 'painel.savedFilters',
 };

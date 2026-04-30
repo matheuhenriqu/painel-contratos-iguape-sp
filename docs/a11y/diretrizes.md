@@ -15,7 +15,7 @@ Este painel mira WCAG 2.2 AA como requisito mínimo e aplica práticas AAA quand
 
 - O painel mantém uma única região viva: `#actionFeedback`.
 - Resultados de filtros são anunciados após debounce de 600 ms.
-- Ações como copiar, exportar, trocar tema e atualização disponível são anunciadas uma vez.
+- Ações como copiar, exportar e atualização disponível são anunciadas uma vez.
 - Conteúdos que já mudam visualmente, como resumo e contadores, não usam `aria-live` próprio para evitar repetição em leitores de tela.
 
 ## Foco e teclado
@@ -28,9 +28,8 @@ Este painel mira WCAG 2.2 AA como requisito mínimo e aplica práticas AAA quand
 
 ## Contraste e cor
 
-- O tema de alto contraste usa preto, branco e amarelo com bordas reforçadas.
+- O modo claro usa a paleta oficial de Iguape com contraste mínimo AA.
 - Badges de status combinam ícone e texto; cor nunca é a única forma de identificação.
-- Links no tema de alto contraste são sublinhados.
 - Estados de foco usam anel visível com `--color-focus-ring`.
 
 ## Movimento

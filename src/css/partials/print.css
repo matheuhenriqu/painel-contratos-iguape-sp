@@ -18,9 +18,7 @@
     }
   }
 
-  :root,
-  [data-theme='dark'],
-  [data-theme='hc'] {
+  :root {
     color-scheme: light;
     --color-bg: #ffffff;
     --color-bg-canvas: #ffffff;
@@ -80,7 +78,6 @@
   .urgency-banner,
   .data-warning-banner,
   .floating-top-button,
-  .theme-toggle-button,
   .mobile-view-toggle,
   .site-footer,
   .chart-empty,
