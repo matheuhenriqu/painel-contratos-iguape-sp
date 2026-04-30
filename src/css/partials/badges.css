@@ -1,0 +1,130 @@
+/* marcadores */
+
+td.muted,
+.empty-state {
+  color: var(--muted);
+}
+
+.reference-code {
+  align-items: center;
+  background: #f6faf8;
+  border: 1px solid #d8e4dd;
+  border-radius: 6px;
+  color: #233831;
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 850;
+  line-height: 1.25;
+  max-width: 100%;
+  padding: 2px 6px;
+  width: fit-content;
+}
+
+.timing-pill {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  margin-top: 5px;
+  max-width: 100%;
+  padding: 3px 7px;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.timing-ok {
+  background: #e8f3ed;
+  color: #155f49;
+}
+
+.timing-warning {
+  background: #fff1da;
+  color: #7a4c0f;
+}
+
+.timing-notice {
+  background: #e6f4f8;
+  color: #225f76;
+}
+
+.timing-danger {
+  background: #fde9e6;
+  color: #8d2f2a;
+}
+
+.timing-closed,
+.timing-neutral {
+  background: #eef3f0;
+  color: #55625d;
+}
+
+.status-badge {
+  align-items: center;
+  background: var(--blue);
+  color: #fff;
+  display: inline-flex;
+  font-size: 0.68rem;
+  gap: 4px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 1.15;
+  max-width: 100%;
+  padding: 4px 6px;
+  text-align: center;
+  white-space: normal;
+}
+
+.status-badge .icon {
+  height: 0.9em;
+  stroke-width: 2.4;
+  width: 0.9em;
+}
+
+.status-cell {
+  align-content: start;
+  display: grid;
+  gap: 5px;
+}
+
+.status-cell small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.status-vigente {
+  background: var(--green);
+}
+
+.status-vence-hoje,
+.status-proximo-de-vencer,
+.status-vence-ate-30 {
+  background: var(--amber);
+}
+
+.status-vence-31-90 {
+  background: var(--blue);
+}
+
+.status-vencido {
+  background: var(--red);
+}
+
+.status-encerrado,
+.status-concluido {
+  background: #707a77;
+}
+
+.status-sem-data,
+.status-sem-informacao {
+  background: var(--plum);
+}
+
+.empty-state {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+}

@@ -1,0 +1,25 @@
+/* rodapé */
+
+.site-footer {
+  align-items: center;
+  background: var(--color-bg-canvas, #ffffff);
+  color: var(--muted);
+  display: flex;
+  font-size: 0.84rem;
+  gap: 18px;
+  justify-content: space-between;
+  line-height: 1.45;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 2.2vw, 34px) 32px;
+  width: min(1680px, 100%);
+}
+
+.site-footer > div {
+  display: grid;
+  gap: 3px;
+}
+
+.site-footer strong {
+  color: var(--ink);
+  font-size: 0.88rem;
+}

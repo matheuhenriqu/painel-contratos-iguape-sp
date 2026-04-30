@@ -1,0 +1,152 @@
+/* barra superior */
+
+.topbar {
+  align-items: center;
+  background: linear-gradient(90deg, rgba(15, 62, 50, 0.98), rgba(21, 95, 73, 0.96)), var(--header);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 18px rgba(16, 56, 78, 0.12);
+  color: #fff;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  min-height: 92px;
+  padding: 16px clamp(16px, 2.2vw, 34px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand,
+.topbar-actions,
+.filter-header,
+.panel-header,
+.table-toolbar,
+.table-controls,
+.active-filters,
+.metric-row {
+  align-items: center;
+  display: flex;
+}
+
+.brand {
+  gap: 16px;
+  min-width: 0;
+}
+
+.brand-logo-frame {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(21, 95, 73, 0.08);
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: clamp(58px, 5.4vw, 72px);
+  justify-content: center;
+  width: clamp(58px, 5.4vw, 72px);
+}
+
+.brand-logo {
+  display: block;
+  filter: none;
+  flex: 0 0 auto;
+  height: 84%;
+  max-height: none;
+  object-fit: contain;
+  width: 84%;
+}
+
+.brand h1,
+.brand p,
+.panel h2,
+.panel p,
+.table-toolbar h2,
+.table-toolbar p {
+  margin: 0;
+}
+
+.brand h1 {
+  color: #fff;
+  font-size: clamp(1.16rem, 0.62vw + 1rem, 1.48rem);
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+
+.brand-copy {
+  min-width: 0;
+}
+
+.brand-copy span {
+  color: rgba(255, 255, 255, 0.72);
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.brand p,
+.panel p,
+.table-toolbar p,
+.updated-label {
+  color: var(--muted);
+}
+
+.brand p,
+.updated-label {
+  font-size: 0.86rem;
+}
+
+.topbar-actions {
+  flex: 0 0 auto;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.theme-toggle-button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-topbar-border);
+  border-radius: var(--radius-full);
+  color: var(--color-topbar-text);
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.theme-toggle-button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.theme-toggle-button svg {
+  height: 18px;
+  width: 18px;
+}
+
+.updated-label {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.88);
+  display: inline-flex;
+  gap: 8px;
+  max-width: 100%;
+  min-height: 34px;
+  overflow: hidden;
+  padding: 7px 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.updated-label svg {
+  color: rgba(255, 255, 255, 0.76);
+  flex: 0 0 auto;
+  height: 16px;
+  width: 16px;
+}

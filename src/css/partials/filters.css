@@ -1,0 +1,242 @@
+/* filtros */
+
+.ghost-button:hover,
+.quick-filter-button:hover,
+.mini-action-button:hover {
+  transform: translateY(-1px);
+}
+
+.ghost-button svg,
+.panel-header svg,
+.filter-title-button svg {
+  height: 18px;
+  width: 18px;
+}
+
+.filters {
+  align-self: start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+  padding: 18px;
+  position: sticky;
+  top: 108px;
+}
+
+.filter-header {
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.filter-title-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  display: inline-flex;
+  font-size: 0.98rem;
+  font-weight: 850;
+  gap: 8px;
+  min-height: 34px;
+  min-width: 0;
+  padding: 0;
+}
+
+.filter-count-badge {
+  align-items: center;
+  background: var(--amber);
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 900;
+  height: 22px;
+  justify-content: center;
+  min-width: 22px;
+  padding: 0 7px;
+}
+
+.filter-chevron {
+  display: none;
+  transition: transform 180ms ease;
+}
+
+.filter-body {
+  display: block;
+}
+
+.quick-filter-group {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.quick-filter-button,
+.mini-action-button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: #44554f;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 800;
+  gap: 7px;
+  justify-content: center;
+  min-height: 34px;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.quick-filter-button.is-active {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+.status-note {
+  background: #fbfcf7;
+  border: 1px solid #dce6e1;
+  border-left: 3px solid var(--gold);
+  border-radius: 8px;
+  color: #53645e;
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.35;
+  margin: 2px 0 0;
+  padding: 10px 11px;
+}
+
+.field-help {
+  color: var(--muted);
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 650;
+  line-height: 1.35;
+  margin-top: 6px;
+}
+
+.saved-filter-field {
+  display: grid;
+  gap: 8px;
+}
+
+.saved-filter-actions {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 1fr 0.72fr 0.72fr;
+}
+
+.saved-filters-list {
+  display: grid;
+  gap: 6px;
+}
+
+.saved-filter-empty {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 650;
+  margin: 0;
+}
+
+.saved-filter-item {
+  align-items: center;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.saved-filter-item button {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--green);
+  font-size: 0.76rem;
+  font-weight: 800;
+  min-height: 34px;
+  padding: 4px 8px;
+}
+
+.saved-filter-item > button {
+  justify-content: flex-start;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saved-filter-item > div {
+  display: flex;
+  gap: 4px;
+}
+
+.filters,
+.kpi-card,
+.insight-card,
+.panel {
+  animation: rise-in 260ms ease both;
+}
+
+.status-badge,
+.filter-chip {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 26px;
+  white-space: nowrap;
+}
+
+.sort-dir-button:hover,
+.pager-button:hover,
+.density-button:hover,
+.section-toggle-button:hover,
+.filter-chip:hover,
+.floating-top-button:hover {
+  background: #f5faf7;
+  border-color: var(--green);
+}
+
+.sort-dir-button svg,
+.pager-button svg,
+.density-button svg,
+.section-toggle-button svg,
+.filter-chip svg {
+  height: 15px;
+  width: 15px;
+}
+
+.active-filters {
+  flex-wrap: wrap;
+  gap: 8px;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  margin-top: 12px;
+  min-height: 0;
+}
+
+.filter-chip {
+  background: #eef7f2;
+  border: 1px solid #bcd4ca;
+  border-radius: 999px;
+  color: var(--green);
+  cursor: pointer;
+  gap: 6px;
+  padding: 4px 8px;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.filter-chip span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

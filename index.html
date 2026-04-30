@@ -1,29 +1,217 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Painel de gestão de contratos de Iguape/SP">
-    <meta name="referrer" content="no-referrer">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; media-src 'none'; worker-src 'none'; manifest-src 'self'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
-    <meta name="theme-color" content="#16664f">
-    <meta name="color-scheme" content="light">
-    <title>Painel de Gestão de Contratos</title>
-    <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
-    <link rel="preload" href="assets/apple-touch-icon.png" as="image">
-    <link rel="stylesheet" href="styles.css">
-    <script src="assets/vendor/chart.umd.min.js" defer></script>
-    <script src="assets/vendor/lucide.min.js" defer></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Transparência de contratos da Prefeitura de Iguape/SP para consulta pública, acompanhamento de prazos e apoio à gestão pública municipal."
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'sha256-IbdZsJ9gczIVKRGjphafydmlV3PDwKYWO48JDLgC3B0='; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; media-src 'none'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'none'"
+    />
+    <meta name="theme-color" content="#16664f" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta name="application-name" content="Contratos Iguape" />
+    <meta property="og:title" content="Painel de Contratos — Iguape/SP" />
+    <meta
+      property="og:description"
+      content="Transparência pública dos contratos da Prefeitura Municipal de Iguape/SP."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://matheuhenriqu.github.io/painel-contratos-iguape-sp/" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta
+      property="og:image"
+      content="https://matheuhenriqu.github.io/painel-contratos-iguape-sp/assets/og-image.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Brasão de Iguape com o título Painel de Contratos — Iguape/SP e subtítulo Transparência pública"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Painel de Contratos — Iguape/SP" />
+    <meta
+      name="twitter:description"
+      content="Transparência pública dos contratos da Prefeitura Municipal de Iguape/SP."
+    />
+    <meta
+      name="twitter:image"
+      content="https://matheuhenriqu.github.io/painel-contratos-iguape-sp/assets/og-image.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Brasão de Iguape com o título Painel de Contratos — Iguape/SP e subtítulo Transparência pública"
+    />
+    <title>Painel de Contratos — Prefeitura Municipal de Iguape/SP</title>
+    <link rel="canonical" href="https://matheuhenriqu.github.io/painel-contratos-iguape-sp/" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icons/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="assets/icons/favicon-96.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+    <link rel="preload" href="assets/apple-touch-icon.png" as="image" />
+    <link rel="preload" href="src/css/main.css" as="style" />
+    <link rel="preload" href="src/css/tokens.css" as="style" />
+    <link rel="preload" href="src/css/themes.css" as="style" />
+    <link rel="preload" href="src/css/partials/base.css" as="style" />
+    <link rel="preload" href="src/css/partials/layout.css" as="style" />
+    <link rel="preload" href="src/css/partials/topbar.css" as="style" />
+    <link rel="preload" href="src/css/partials/buttons.css" as="style" />
+    <link rel="preload" href="src/css/partials/forms.css" as="style" />
+    <link rel="preload" href="src/css/partials/filters.css" as="style" />
+    <link rel="preload" href="src/css/partials/kpis.css" as="style" />
+    <link rel="preload" href="src/css/partials/panels.css" as="style" />
+    <link rel="preload" href="src/css/partials/charts.css" as="style" />
+    <link rel="preload" href="src/css/partials/badges.css" as="style" />
+    <link rel="preload" href="src/css/partials/tables.css" as="style" />
+    <link rel="preload" href="src/css/partials/footer.css" as="style" />
+    <link rel="preload" href="src/css/partials/responsive.css" as="style" />
+    <link rel="preload" href="src/css/partials/print.css" as="style" />
+    <link rel="preload" href="data/contratos.js" as="script" />
+    <link rel="modulepreload" href="src/js/main.js" />
+    <link rel="modulepreload" href="src/js/constants.js" />
+    <link rel="modulepreload" href="src/js/data/aggregate.js" />
+    <link rel="modulepreload" href="src/js/data/classify.js" />
+    <link rel="modulepreload" href="src/js/data/normalize.js" />
+    <link rel="modulepreload" href="src/js/data/source.js" />
+    <link rel="modulepreload" href="src/js/data/validation.js" />
+    <link rel="modulepreload" href="src/js/pwa/service-worker-registration.js" />
+    <link rel="modulepreload" href="src/js/state/store.js" />
+    <link rel="modulepreload" href="src/js/state/url-sync.js" />
+    <link rel="modulepreload" href="src/js/ui/back-to-top.js" />
+    <link rel="modulepreload" href="src/js/ui/charts.js" />
+    <link rel="modulepreload" href="src/js/ui/export-csv.js" />
+    <link rel="modulepreload" href="src/js/ui/feedback.js" />
+    <link rel="modulepreload" href="src/js/ui/filters.js" />
+    <link rel="modulepreload" href="src/js/ui/keyboard.js" />
+    <link rel="modulepreload" href="src/js/ui/kpis.js" />
+    <link rel="modulepreload" href="src/js/ui/mobile-cards.js" />
+    <link rel="modulepreload" href="src/js/ui/print.js" />
+    <link rel="modulepreload" href="src/js/ui/quality.js" />
+    <link rel="modulepreload" href="src/js/ui/saved-filters.js" />
+    <link rel="modulepreload" href="src/js/ui/section-toggles.js" />
+    <link rel="modulepreload" href="src/js/ui/summary.js" />
+    <link rel="modulepreload" href="src/js/ui/table.js" />
+    <link rel="modulepreload" href="src/js/ui/theme.js" />
+    <link rel="modulepreload" href="src/js/ui/contract-details.js" />
+    <link rel="modulepreload" href="src/js/ui/data-warnings.js" />
+    <link rel="modulepreload" href="src/js/ui/export-data.js" />
+    <link rel="modulepreload" href="src/js/ui/export-json.js" />
+    <link rel="modulepreload" href="src/js/ui/export-pdf.js" />
+    <link rel="modulepreload" href="src/js/ui/export-xlsx.js" />
+    <link rel="modulepreload" href="src/js/ui/advanced-visualizations.js" />
+    <link rel="modulepreload" href="src/js/ui/urgency.js" />
+    <link rel="modulepreload" href="src/js/ui/share.js" />
+    <link rel="modulepreload" href="src/js/utils/clipboard.js" />
+    <link rel="modulepreload" href="src/js/utils/dates.js" />
+    <link rel="modulepreload" href="src/js/utils/dom.js" />
+    <link rel="modulepreload" href="src/js/utils/format.js" />
+    <link rel="modulepreload" href="src/js/utils/icons.js" />
+    <link rel="modulepreload" href="src/js/utils/load-script.js" />
+    <link rel="modulepreload" href="src/js/utils/search.js" />
+    <link rel="modulepreload" href="src/js/utils/svg.js" />
+    <link rel="modulepreload" href="src/js/utils/strings.js" />
+    <script src="src/js/theme-bootstrap.js"></script>
+    <link rel="stylesheet" href="src/css/main.css" />
     <script src="data/contratos.js" defer></script>
-    <script src="app.js" defer></script>
+    <script type="module" src="src/js/main.js"></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "GovernmentOrganization",
+            "@id": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/#prefeitura",
+            "name": "Prefeitura Municipal de Iguape",
+            "url": "https://www.iguape.sp.gov.br/",
+            "logo": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/assets/apple-touch-icon.png",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Iguape",
+              "addressRegion": "SP",
+              "addressCountry": "BR"
+            },
+            "areaServed": {
+              "@type": "City",
+              "name": "Iguape"
+            }
+          },
+          {
+            "@type": "Dataset",
+            "@id": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/#dataset",
+            "name": "Painel de Contratos — Iguape/SP",
+            "description": "Base local usada pelo painel público de transparência de contratos da Prefeitura Municipal de Iguape/SP.",
+            "license": "Sem licença explícita",
+            "creator": {
+              "@id": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/#prefeitura"
+            },
+            "distribution": {
+              "@type": "DataDownload",
+              "encodingFormat": "application/javascript",
+              "contentUrl": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/data/contratos.js"
+            },
+            "dateModified": "2026-04-23T21:17:18"
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/#breadcrumb",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Início",
+                "item": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Painel de Contratos",
+                "item": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/"
+              }
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/#website",
+            "name": "Painel de Contratos — Iguape/SP",
+            "url": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://matheuhenriqu.github.io/painel-contratos-iguape-sp/?busca={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#content">Ir para o conteúdo principal</a>
-    <header class="topbar">
+    <nav class="skip-nav" aria-label="Navegação principal">
+      <a href="#filterTitle">Filtros</a>
+      <a href="#summaryTitle">Resumo</a>
+      <a href="#qualityTitle">Qualidade</a>
+      <a href="#chartsTitle">Gráficos</a>
+      <a href="#advancedViewsTitle">Visualizações</a>
+      <a href="#contractsTitle">Contratos</a>
+    </nav>
+    <header class="topbar" role="banner">
       <div class="brand">
         <span class="brand-logo-frame">
-          <img class="brand-logo" src="assets/apple-touch-icon.png" alt="Brasão da Prefeitura de Iguape" decoding="async">
+          <img
+            class="brand-logo"
+            src="assets/apple-touch-icon.png"
+            alt="Brasão da Prefeitura de Iguape"
+            decoding="async"
+            fetchpriority="high"
+          />
         </span>
         <div class="brand-copy">
           <span>Prefeitura Municipal de Iguape</span>
@@ -31,25 +219,123 @@
         </div>
       </div>
       <div class="topbar-actions">
+        <button
+          id="themeToggleBtn"
+          class="theme-toggle-button"
+          type="button"
+          aria-label="Alternar tema, atual: automático"
+        >
+          <svg id="themeToggleIcon" class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/icons/sprite.svg#sun-moon"></use>
+          </svg>
+          <span id="themeToggleLabel" class="sr-only">Tema automático</span>
+        </button>
+        <span id="themeStatus" class="sr-only"></span>
         <span class="updated-label">
-          <i aria-hidden="true" data-lucide="database"></i>
+          <svg class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/icons/sprite.svg#database"></use>
+          </svg>
           <span id="updatedLabel"></span>
         </span>
       </div>
     </header>
 
-    <main id="content" class="app-shell" tabindex="-1">
-      <aside class="filters" aria-labelledby="filterTitle">
+    <div
+      id="updateBanner"
+      class="update-banner"
+      role="region"
+      aria-label="Atualização disponível"
+      hidden
+    >
+      <p>Uma atualização do painel está disponível.</p>
+      <button id="updateNowBtn" class="ghost-button" type="button">Atualizar agora</button>
+    </div>
+
+    <div id="urgencyBanner" class="urgency-banner" role="region" aria-labelledby="urgencyCount">
+      <p>
+        <strong id="urgencyCount">14 contrato(s) crítico(s).</strong>
+        <span>Verifique vencidos e prazos de até 7 dias.</span>
+      </p>
+      <div class="urgency-actions">
+        <button id="urgencyViewBtn" class="ghost-button" type="button">Ver agora</button>
+        <button
+          id="urgencyDismissBtn"
+          class="icon-button"
+          type="button"
+          aria-label="Dispensar alerta de urgência"
+        >
+          <svg class="icon" aria-hidden="true" focusable="false">
+            <use href="assets/icons/sprite.svg#x"></use>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div
+      id="dataWarningsBanner"
+      class="data-warning-banner"
+      role="region"
+      aria-labelledby="dataWarningsTitle"
+      hidden
+    >
+      <p>
+        <strong id="dataWarningsTitle">Registros com avisos.</strong>
+        <span id="dataWarningsSummary"></span>
+      </p>
+      <button id="dataWarningsDetailsBtn" class="ghost-button" type="button">Ver detalhes</button>
+    </div>
+
+    <section id="printReportMeta" class="print-report-meta" aria-hidden="true">
+      <div class="print-report-header">
+        <img src="assets/apple-touch-icon.png" alt="" width="72" height="72" decoding="async" />
+        <div>
+          <p>Prefeitura Municipal de Iguape</p>
+          <h2>Relatório de Contratos</h2>
+          <span id="printGeneratedAt">Recorte aplicado em --/--/---- --:--</span>
+        </div>
+      </div>
+      <div class="print-report-grid">
+        <div>
+          <h2>Filtros aplicados</h2>
+          <ul id="printFiltersList"></ul>
+        </div>
+        <div class="print-qr-block">
+          <h2>Consulta digital</h2>
+          <div id="printQrCode" class="print-qr-code"></div>
+          <p id="printCanonicalUrl"></p>
+        </div>
+      </div>
+    </section>
+
+    <main id="content" class="app-shell" tabindex="-1" role="main">
+      <aside class="filters is-collapsed" aria-labelledby="filterTitle">
         <h2 id="filterTitle" class="sr-only">Filtros de consulta</h2>
         <div class="filter-header">
-          <button id="toggleFiltersBtn" class="filter-title-button" type="button" aria-expanded="true" aria-controls="filterBody">
-            <i aria-hidden="true" data-lucide="sliders-horizontal"></i>
-            <span id="filterToggleLabel">Filtros</span>
+          <button
+            id="toggleFiltersBtn"
+            class="filter-title-button"
+            type="button"
+            aria-expanded="false"
+            aria-controls="filterBody"
+          >
+            <svg class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/icons/sprite.svg#sliders-horizontal"></use>
+            </svg>
+            <span id="filterToggleLabel">Mostrar filtros</span>
             <span id="filterCountBadge" class="filter-count-badge" hidden></span>
-            <i class="filter-chevron" aria-hidden="true" data-lucide="chevron-down"></i>
+            <svg class="icon filter-chevron" aria-hidden="true" focusable="false">
+              <use href="assets/icons/sprite.svg#chevron-down"></use>
+            </svg>
           </button>
-          <button id="clearFiltersBtn" class="ghost-button" type="button" aria-label="Limpar todos os filtros">
-            <i aria-hidden="true" data-lucide="rotate-ccw"></i>
+          <button
+            id="clearFiltersBtn"
+            class="ghost-button"
+            type="button"
+            aria-label="Limpar todos os filtros"
+          >
+            <svg class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/icons/sprite.svg#rotate-ccw"></use>
+            </svg>
             <span>Limpar</span>
           </button>
         </div>
@@ -58,23 +344,70 @@
           <label class="field">
             <span>Busca</span>
             <div class="input-shell">
-              <i aria-hidden="true" data-lucide="search"></i>
-              <input id="searchInput" type="search" placeholder="Objeto, empresa, contrato, processo..." autocomplete="off">
-              <button id="clearSearchBtn" class="input-clear-button" type="button" aria-label="Limpar busca" hidden>
-                <i aria-hidden="true" data-lucide="x"></i>
+              <svg class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/icons/sprite.svg#search"></use>
+              </svg>
+              <input
+                id="searchInput"
+                type="search"
+                placeholder="Objeto, empresa, contrato, processo..."
+                autocomplete="off"
+              />
+              <button
+                id="clearSearchBtn"
+                class="input-clear-button"
+                type="button"
+                aria-label="Limpar busca"
+                hidden
+              >
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#x"></use>
+                </svg>
               </button>
             </div>
+            <small id="searchSyntaxHint" class="field-help"
+              >Use operadores como empresa:"texto", status:vencido, valor:&gt;50000 e
+              vencimento:2026-03..2026-06.</small
+            >
           </label>
 
           <div class="field quick-filter-field">
             <span>Recorte rápido</span>
             <div class="quick-filter-group" role="group" aria-label="Recortes rápidos">
-              <button class="quick-filter-button" type="button" data-quick-filter="todos">Todos</button>
-              <button class="quick-filter-button" type="button" data-quick-filter="ativos">Ativos</button>
-              <button class="quick-filter-button" type="button" data-quick-filter="vencidos">Vencidos</button>
-              <button class="quick-filter-button" type="button" data-quick-filter="30">30 dias</button>
+              <button class="quick-filter-button" type="button" data-quick-filter="todos">
+                Todos
+              </button>
+              <button class="quick-filter-button" type="button" data-quick-filter="ativos">
+                Ativos
+              </button>
+              <button class="quick-filter-button" type="button" data-quick-filter="vencidos">
+                Vencidos
+              </button>
+              <button class="quick-filter-button" type="button" data-quick-filter="30">
+                30 dias
+              </button>
             </div>
-            <p class="status-note">Vencido: prazo expirado e contrato ainda aberto. Encerrado: contrato fechado na planilha.</p>
+            <p class="status-note">
+              Vencido: prazo expirado e contrato ainda aberto. Encerrado: contrato fechado na
+              planilha.
+            </p>
+          </div>
+
+          <div class="field saved-filter-field">
+            <span>Filtros salvos</span>
+            <div class="saved-filter-actions" role="group" aria-label="Ações de filtros salvos">
+              <button id="saveFilterBtn" class="mini-action-button" type="button">
+                Salvar filtro atual
+              </button>
+              <button id="exportFiltersBtn" class="mini-action-button" type="button">
+                Exportar
+              </button>
+              <button id="importFiltersBtn" class="mini-action-button" type="button">
+                Importar
+              </button>
+            </div>
+            <input id="importFiltersInput" type="file" accept="application/json,.json" hidden />
+            <div id="savedFiltersList" class="saved-filters-list"></div>
           </div>
 
           <label class="field">
@@ -86,6 +419,7 @@
             <span>Prazo</span>
             <select id="prazoFilter">
               <option value="todos">Todos</option>
+              <option value="critico">Críticos: vencidos ou até 7 dias</option>
               <option value="vencido">Vencidos</option>
               <option value="hoje">Vence hoje</option>
               <option value="30">Até 30 dias</option>
@@ -117,17 +451,22 @@
         </div>
       </aside>
 
-      <section class="workspace" aria-label="Conteúdo do painel">
+      <section class="workspace" aria-labelledby="workspaceTitle">
+        <h2 id="workspaceTitle" class="sr-only">Conteúdo do painel</h2>
         <div class="section-heading">
           <div>
             <span>Transparência pública</span>
             <h2>Visão geral dos contratos</h2>
           </div>
-          <p>Dados consolidados para consulta, acompanhamento de prazos e apoio à gestão municipal.</p>
+          <p>
+            Dados consolidados para consulta, acompanhamento de prazos e apoio à gestão municipal.
+          </p>
         </div>
 
-        <section id="kpiGrid" class="kpi-grid" aria-label="Indicadores"></section>
-        <section id="insightGrid" class="insight-grid" aria-label="Leituras rápidas"></section>
+        <h2 id="kpiGridTitle" class="sr-only">Indicadores</h2>
+        <section id="kpiGrid" class="kpi-grid" aria-labelledby="kpiGridTitle"></section>
+        <h2 id="insightGridTitle" class="sr-only">Leituras rápidas</h2>
+        <section id="insightGrid" class="insight-grid" aria-labelledby="insightGridTitle"></section>
 
         <section class="panel summary-panel" aria-labelledby="summaryTitle">
           <div class="panel-header summary-header">
@@ -137,21 +476,57 @@
             </div>
             <div class="action-toolbar" role="group" aria-label="Exportações e relatório">
               <button id="copySummaryBtn" class="ghost-button" type="button">
-                <i aria-hidden="true" data-lucide="copy"></i>
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#copy"></use>
+                </svg>
                 <span>Copiar resumo</span>
               </button>
               <button id="exportCsvBtn" class="ghost-button" type="button">
-                <i aria-hidden="true" data-lucide="file-down"></i>
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#file-down"></use>
+                </svg>
                 <span>Exportar CSV</span>
               </button>
+              <button id="exportXlsxBtn" class="ghost-button" type="button">
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#file-down"></use>
+                </svg>
+                <span>Exportar XLSX</span>
+              </button>
+              <button id="exportPdfBtn" class="ghost-button" type="button">
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#file-text"></use>
+                </svg>
+                <span>Exportar PDF</span>
+              </button>
+              <button id="exportJsonBtn" class="ghost-button" type="button">
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#file-down"></use>
+                </svg>
+                <span>Exportar JSON</span>
+              </button>
+              <button id="shareReportBtn" class="ghost-button" type="button">
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#copy"></use>
+                </svg>
+                <span>Compartilhar</span>
+              </button>
               <button id="printReportBtn" class="ghost-button" type="button">
-                <i aria-hidden="true" data-lucide="printer"></i>
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#printer"></use>
+                </svg>
                 <span>Imprimir</span>
               </button>
             </div>
           </div>
-          <p id="autoSummary" class="auto-summary" aria-live="polite"></p>
-          <p id="actionFeedback" class="action-feedback" role="status" aria-live="polite"></p>
+          <p id="autoSummary" class="auto-summary"></p>
+          <p
+            id="actionFeedback"
+            class="action-feedback"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          ></p>
         </section>
 
         <div class="section-heading compact">
@@ -163,8 +538,13 @@
         </div>
 
         <section class="quality-panel panel" aria-labelledby="qualityTitle">
-          <div id="qualityGrid" class="quality-grid" aria-label="Indicadores de qualidade dos dados"></div>
-          <div id="qualityAlerts" class="quality-alerts" aria-live="polite"></div>
+          <div
+            id="qualityGrid"
+            class="quality-grid"
+            role="group"
+            aria-label="Indicadores de qualidade dos dados"
+          ></div>
+          <div id="qualityAlerts" class="quality-alerts"></div>
         </section>
 
         <div class="section-heading compact">
@@ -182,11 +562,19 @@
                 <h2>Status dos contratos</h2>
                 <p id="statusChartHint"></p>
               </div>
-              <i aria-hidden="true" data-lucide="activity"></i>
+              <svg class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/icons/sprite.svg#activity"></use>
+              </svg>
             </div>
             <div class="chart-frame">
-              <canvas id="statusChart" role="img" aria-label="Gráfico de contratos por status"></canvas>
-              <p id="statusChartEmpty" class="chart-empty" hidden>Sem dados para exibir neste recorte.</p>
+              <canvas
+                id="statusChart"
+                role="img"
+                aria-label="Gráfico de contratos por status"
+              ></canvas>
+              <p id="statusChartEmpty" class="chart-empty" hidden>
+                Sem dados para exibir neste recorte.
+              </p>
             </div>
           </article>
 
@@ -196,11 +584,19 @@
                 <h2>Valor por modalidade</h2>
                 <p id="modalidadeChartHint"></p>
               </div>
-              <i aria-hidden="true" data-lucide="bar-chart-3"></i>
+              <svg class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/icons/sprite.svg#bar-chart-3"></use>
+              </svg>
             </div>
             <div class="chart-frame">
-              <canvas id="modalidadeChart" role="img" aria-label="Gráfico de valor por modalidade"></canvas>
-              <p id="modalidadeChartEmpty" class="chart-empty" hidden>Sem valores por modalidade neste recorte.</p>
+              <canvas
+                id="modalidadeChart"
+                role="img"
+                aria-label="Gráfico de valor por modalidade"
+              ></canvas>
+              <p id="modalidadeChartEmpty" class="chart-empty" hidden>
+                Sem valores por modalidade neste recorte.
+              </p>
             </div>
           </article>
 
@@ -210,11 +606,19 @@
                 <h2>Contratos por modalidade</h2>
                 <p id="modalidadeCountChartHint"></p>
               </div>
-              <i aria-hidden="true" data-lucide="layers-3"></i>
+              <svg class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/icons/sprite.svg#layers-3"></use>
+              </svg>
             </div>
             <div class="chart-frame">
-              <canvas id="modalidadeCountChart" role="img" aria-label="Gráfico de contratos por modalidade"></canvas>
-              <p id="modalidadeCountChartEmpty" class="chart-empty" hidden>Sem contratos por modalidade neste recorte.</p>
+              <canvas
+                id="modalidadeCountChart"
+                role="img"
+                aria-label="Gráfico de contratos por modalidade"
+              ></canvas>
+              <p id="modalidadeCountChartEmpty" class="chart-empty" hidden>
+                Sem contratos por modalidade neste recorte.
+              </p>
             </div>
           </article>
 
@@ -224,11 +628,19 @@
                 <h2>Vencimentos por mês</h2>
                 <p id="dueMonthChartHint"></p>
               </div>
-              <i aria-hidden="true" data-lucide="calendar-days"></i>
+              <svg class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/icons/sprite.svg#calendar-days"></use>
+              </svg>
             </div>
             <div class="chart-frame">
-              <canvas id="dueMonthChart" role="img" aria-label="Gráfico de vencimentos por mês"></canvas>
-              <p id="dueMonthChartEmpty" class="chart-empty" hidden>Sem vencimentos datados neste recorte.</p>
+              <canvas
+                id="dueMonthChart"
+                role="img"
+                aria-label="Gráfico de vencimentos por mês"
+              ></canvas>
+              <p id="dueMonthChartEmpty" class="chart-empty" hidden>
+                Sem vencimentos datados neste recorte.
+              </p>
             </div>
           </article>
 
@@ -238,11 +650,19 @@
                 <h2>Empresas por valor</h2>
                 <p id="companyValueChartHint"></p>
               </div>
-              <i aria-hidden="true" data-lucide="building-2"></i>
+              <svg class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/icons/sprite.svg#building-2"></use>
+              </svg>
             </div>
             <div class="chart-frame">
-              <canvas id="companyValueChart" role="img" aria-label="Gráfico de empresas por valor contratado"></canvas>
-              <p id="companyValueChartEmpty" class="chart-empty" hidden>Sem valores por empresa neste recorte.</p>
+              <canvas
+                id="companyValueChart"
+                role="img"
+                aria-label="Gráfico de empresas por valor contratado"
+              ></canvas>
+              <p id="companyValueChartEmpty" class="chart-empty" hidden>
+                Sem valores por empresa neste recorte.
+              </p>
             </div>
           </article>
 
@@ -252,11 +672,19 @@
                 <h2>Empresas por quantidade</h2>
                 <p id="companyCountChartHint"></p>
               </div>
-              <i aria-hidden="true" data-lucide="list-ordered"></i>
+              <svg class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/icons/sprite.svg#list-ordered"></use>
+              </svg>
             </div>
             <div class="chart-frame">
-              <canvas id="companyCountChart" role="img" aria-label="Gráfico de empresas por quantidade de contratos"></canvas>
-              <p id="companyCountChartEmpty" class="chart-empty" hidden>Sem empresas neste recorte.</p>
+              <canvas
+                id="companyCountChart"
+                role="img"
+                aria-label="Gráfico de empresas por quantidade de contratos"
+              ></canvas>
+              <p id="companyCountChartEmpty" class="chart-empty" hidden>
+                Sem empresas neste recorte.
+              </p>
             </div>
           </article>
 
@@ -266,10 +694,16 @@
                 <h2>Distribuição por prazo</h2>
                 <p id="deadlineChartHint"></p>
               </div>
-              <i aria-hidden="true" data-lucide="timer"></i>
+              <svg class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/icons/sprite.svg#timer"></use>
+              </svg>
             </div>
             <div class="chart-frame">
-              <canvas id="deadlineChart" role="img" aria-label="Gráfico de distribuição por prazo"></canvas>
+              <canvas
+                id="deadlineChart"
+                role="img"
+                aria-label="Gráfico de distribuição por prazo"
+              ></canvas>
               <p id="deadlineChartEmpty" class="chart-empty" hidden>Sem prazos neste recorte.</p>
             </div>
           </article>
@@ -280,11 +714,173 @@
                 <h2>Qualidade cadastral</h2>
                 <p id="qualityChartHint"></p>
               </div>
-              <i aria-hidden="true" data-lucide="clipboard-check"></i>
+              <svg class="icon" aria-hidden="true" focusable="false">
+                <use href="assets/icons/sprite.svg#clipboard-check"></use>
+              </svg>
             </div>
             <div class="chart-frame">
-              <canvas id="qualityChart" role="img" aria-label="Gráfico de qualidade cadastral dos dados"></canvas>
-              <p id="qualityChartEmpty" class="chart-empty" hidden>Sem dados de qualidade neste recorte.</p>
+              <canvas
+                id="qualityChart"
+                role="img"
+                aria-label="Gráfico de qualidade cadastral dos dados"
+              ></canvas>
+              <p id="qualityChartEmpty" class="chart-empty" hidden>
+                Sem dados de qualidade neste recorte.
+              </p>
+            </div>
+          </article>
+        </section>
+
+        <div class="section-heading compact">
+          <div>
+            <span>Inteligência analítica</span>
+            <h2 id="advancedViewsTitle">Visualizações avançadas</h2>
+          </div>
+          <p>
+            Leituras por tempo, vencimento, empresa e responsáveis, sempre sincronizadas com os
+            filtros atuais.
+          </p>
+        </div>
+
+        <section class="advanced-analytics-grid" aria-labelledby="advancedViewsTitle">
+          <article class="panel advanced-panel timeline-panel" aria-labelledby="timelineTitle">
+            <div class="panel-header advanced-panel-header">
+              <div>
+                <h2 id="timelineTitle">Linha do tempo</h2>
+                <p id="timelineHint">Até 50 contratos com período informado no recorte atual.</p>
+              </div>
+              <div class="visual-actions" role="group" aria-label="Ações da linha do tempo">
+                <button id="timelineExportBtn" class="ghost-button" type="button">
+                  Exportar PNG
+                </button>
+              </div>
+            </div>
+            <div class="timeline-toolbar" role="group" aria-label="Paginação da linha do tempo">
+              <button id="timelinePrevBtn" class="pager-button" type="button">Anterior</button>
+              <span id="timelinePageLabel">Página 1 de 1</span>
+              <button id="timelineNextBtn" class="pager-button" type="button">Próxima</button>
+            </div>
+            <div
+              class="visual-scroll"
+              role="region"
+              tabindex="0"
+              aria-label="Área rolável da linha do tempo"
+            >
+              <svg
+                id="timelineSvg"
+                class="advanced-svg timeline-svg"
+                role="group"
+                aria-labelledby="timelineTitle timelineHint"
+              ></svg>
+            </div>
+            <div id="timelineTable" class="sr-only"></div>
+          </article>
+
+          <article class="panel advanced-panel" aria-labelledby="heatmapTitle">
+            <div class="panel-header advanced-panel-header">
+              <div>
+                <h2 id="heatmapTitle">Heatmap de vencimentos</h2>
+                <p id="heatmapHint">Clique em um mês para filtrar a relação de contratos.</p>
+              </div>
+              <div class="visual-actions" role="group" aria-label="Ações do heatmap">
+                <button id="heatmapExportBtn" class="ghost-button" type="button">
+                  Exportar PNG
+                </button>
+              </div>
+            </div>
+            <div
+              class="visual-scroll"
+              role="region"
+              tabindex="0"
+              aria-label="Área rolável do heatmap de vencimentos"
+            >
+              <svg
+                id="heatmapSvg"
+                class="advanced-svg heatmap-svg"
+                role="group"
+                aria-labelledby="heatmapTitle heatmapHint"
+              ></svg>
+            </div>
+            <div id="heatmapTable" class="sr-only"></div>
+          </article>
+
+          <article class="panel advanced-panel" aria-labelledby="treemapTitle">
+            <div class="panel-header advanced-panel-header">
+              <div>
+                <h2 id="treemapTitle">Treemap de empresas por valor</h2>
+                <p id="treemapHint">Tamanho proporcional ao valor contratado no recorte atual.</p>
+              </div>
+              <div class="visual-actions" role="group" aria-label="Ações do treemap">
+                <button id="treemapExportBtn" class="ghost-button" type="button">
+                  Exportar PNG
+                </button>
+              </div>
+            </div>
+            <div
+              class="visual-scroll"
+              role="region"
+              tabindex="0"
+              aria-label="Área rolável do treemap de empresas"
+            >
+              <svg
+                id="companyTreemapSvg"
+                class="advanced-svg treemap-svg"
+                role="group"
+                aria-labelledby="treemapTitle treemapHint"
+              ></svg>
+            </div>
+            <div id="companyTreemapTable" class="sr-only"></div>
+          </article>
+
+          <article class="panel advanced-panel comparison-panel" aria-labelledby="comparisonTitle">
+            <div class="panel-header advanced-panel-header">
+              <div>
+                <h2 id="comparisonTitle">Comparativo gestor/fiscal</h2>
+                <p id="comparisonHint">
+                  Quantidade, valor total, vencidos e prazo médio por responsável.
+                </p>
+              </div>
+              <div class="visual-actions" role="group" aria-label="Ações do comparativo">
+                <button id="comparisonExportBtn" class="ghost-button" type="button">
+                  Exportar PNG
+                </button>
+              </div>
+            </div>
+            <div class="comparison-sort" role="group" aria-label="Ordenação do comparativo">
+              <span>Ordenar por</span>
+              <button class="mini-action-button" type="button" data-comparison-sort="count">
+                Quantidade
+              </button>
+              <button class="mini-action-button" type="button" data-comparison-sort="value">
+                Valor
+              </button>
+              <button
+                class="mini-action-button"
+                type="button"
+                data-comparison-sort="expiredPercent"
+              >
+                % vencidos
+              </button>
+              <button class="mini-action-button" type="button" data-comparison-sort="averageDays">
+                Prazo médio
+              </button>
+            </div>
+            <div
+              class="visual-scroll"
+              role="region"
+              tabindex="0"
+              aria-label="Área rolável do comparativo de gestores e fiscais"
+            >
+              <svg
+                id="comparisonSvg"
+                class="advanced-svg comparison-svg"
+                role="img"
+                aria-labelledby="comparisonTitle comparisonHint"
+              ></svg>
+            </div>
+            <div class="comparison-tables">
+              <div id="managerComparisonTable"></div>
+              <div id="fiscalComparisonTable"></div>
             </div>
           </article>
         </section>
@@ -294,16 +890,19 @@
             <span>Consulta detalhada</span>
             <h2 id="contractsTitle">Relação de contratos</h2>
           </div>
-          <p>Contratos abertos aparecem primeiro, com status de prazo e pendências cadastrais destacados.</p>
+          <p>
+            Contratos abertos aparecem primeiro, com status de prazo e pendências cadastrais
+            destacados.
+          </p>
         </div>
 
         <section class="panel table-panel" aria-labelledby="contractsTitle">
           <div class="table-toolbar">
             <div class="table-title">
               <h2>Contratos vigentes e em acompanhamento</h2>
-              <p id="tableCount" aria-live="polite"></p>
+              <p id="tableCount"></p>
             </div>
-            <div class="table-controls" aria-label="Ordenação da tabela">
+            <div class="table-controls" role="group" aria-label="Ordenação da tabela">
               <label class="sort-control">
                 <span>Ordenar</span>
                 <select id="sortField">
@@ -320,21 +919,45 @@
                   <option value="id">ID</option>
                 </select>
               </label>
-              <button id="sortDirBtn" class="sort-dir-button" type="button" aria-label="Alternar direção da ordenação">
-                <i aria-hidden="true" data-lucide="arrow-up-narrow-wide"></i>
+              <button
+                id="sortDirBtn"
+                class="sort-dir-button"
+                type="button"
+                aria-label="Alternar direção da ordenação"
+              >
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#arrow-up-narrow-wide"></use>
+                </svg>
                 <span id="sortDirLabel">Crescente</span>
               </button>
               <button id="densityBtn" class="density-button" type="button" aria-pressed="false">
-                <i aria-hidden="true" data-lucide="rows-3"></i>
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#rows-3"></use>
+                </svg>
                 <span id="densityLabel">Compacto</span>
               </button>
+              <button
+                id="mobileViewToggleBtn"
+                class="mobile-view-toggle"
+                type="button"
+                aria-pressed="false"
+              >
+                <span id="mobileViewToggleLabel">Cards</span>
+              </button>
             </div>
-            <p id="resultSummary" class="result-summary" role="status" aria-live="polite"></p>
-            <div id="activeFilters" class="active-filters" aria-label="Filtros ativos" aria-live="polite"></div>
+            <p id="resultSummary" class="result-summary"></p>
+            <div
+              id="activeFilters"
+              class="active-filters"
+              role="group"
+              aria-label="Filtros ativos"
+            ></div>
           </div>
-          <div class="table-scroll">
+          <div id="contractsTableScroll" class="table-scroll">
             <table aria-describedby="tableCount">
-              <caption class="sr-only">Contratos vigentes e em acompanhamento</caption>
+              <caption class="sr-only">
+                Contratos vigentes e em acompanhamento
+              </caption>
               <thead>
                 <tr>
                   <th scope="col"><button type="button" data-sort="id">ID</button></th>
@@ -342,9 +965,13 @@
                   <th scope="col"><button type="button" data-sort="processo">Processo</button></th>
                   <th scope="col"><button type="button" data-sort="objeto">Objeto</button></th>
                   <th scope="col"><button type="button" data-sort="empresa">Empresa</button></th>
-                  <th scope="col"><button type="button" data-sort="modalidade">Modalidade</button></th>
+                  <th scope="col">
+                    <button type="button" data-sort="modalidade">Modalidade</button>
+                  </th>
                   <th scope="col"><button type="button" data-sort="valor">Valor</button></th>
-                  <th scope="col"><button type="button" data-sort="dataVencimento">Vencimento</button></th>
+                  <th scope="col">
+                    <button type="button" data-sort="dataVencimento">Vencimento</button>
+                  </th>
                   <th scope="col"><button type="button" data-sort="status">Status</button></th>
                   <th scope="col"><button type="button" data-sort="gestor">Gestor</button></th>
                   <th scope="col"><button type="button" data-sort="fiscal">Fiscal</button></th>
@@ -353,23 +980,46 @@
               <tbody id="contractsTable" class="contracts-table-body"></tbody>
             </table>
           </div>
-          <div id="tablePager" class="table-pager" aria-live="polite"></div>
+          <h2 id="contractsCardsTitle" class="sr-only">Contratos em cards</h2>
+          <section
+            id="contractsCards"
+            class="contract-cards"
+            aria-labelledby="contractsCardsTitle"
+            hidden
+          ></section>
+          <div id="tablePager" class="table-pager"></div>
         </section>
 
-        <section class="contract-groups" aria-label="Contratos por situação">
-          <article id="expiredContractsSection" class="panel table-panel grouped-table-panel" data-collapsible-section>
+        <h2 id="contractGroupsTitle" class="sr-only">Contratos por situação</h2>
+        <section class="contract-groups" aria-labelledby="contractGroupsTitle">
+          <article
+            id="expiredContractsSection"
+            class="panel table-panel grouped-table-panel"
+            data-collapsible-section
+          >
             <div class="table-toolbar">
               <div class="table-title">
                 <h2>Contratos vencidos</h2>
-                <p id="expiredTableCount" aria-live="polite"></p>
+                <p id="expiredTableCount"></p>
               </div>
-              <button class="section-toggle-button" type="button" data-section-toggle aria-expanded="true" aria-controls="expiredContractsContent" aria-label="Recolher contratos vencidos">
-                <i aria-hidden="true" data-lucide="chevron-down"></i>
+              <button
+                class="section-toggle-button"
+                type="button"
+                data-section-toggle
+                aria-expanded="true"
+                aria-controls="expiredContractsContent"
+                aria-label="Recolher contratos vencidos"
+              >
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#chevron-down"></use>
+                </svg>
               </button>
             </div>
             <div id="expiredContractsContent" class="section-content table-scroll">
               <table aria-describedby="expiredTableCount">
-                <caption class="sr-only">Contratos vencidos</caption>
+                <caption class="sr-only">
+                  Contratos vencidos
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col">ID</th>
@@ -390,19 +1040,34 @@
             </div>
           </article>
 
-          <article id="completedContractsSection" class="panel table-panel grouped-table-panel" data-collapsible-section>
+          <article
+            id="completedContractsSection"
+            class="panel table-panel grouped-table-panel"
+            data-collapsible-section
+          >
             <div class="table-toolbar">
               <div class="table-title">
                 <h2>Contratos encerrados e concluídos</h2>
-                <p id="completedTableCount" aria-live="polite"></p>
+                <p id="completedTableCount"></p>
               </div>
-              <button class="section-toggle-button" type="button" data-section-toggle aria-expanded="true" aria-controls="completedContractsContent" aria-label="Recolher contratos encerrados e concluídos">
-                <i aria-hidden="true" data-lucide="chevron-down"></i>
+              <button
+                class="section-toggle-button"
+                type="button"
+                data-section-toggle
+                aria-expanded="true"
+                aria-controls="completedContractsContent"
+                aria-label="Recolher contratos encerrados e concluídos"
+              >
+                <svg class="icon" aria-hidden="true" focusable="false">
+                  <use href="assets/icons/sprite.svg#chevron-down"></use>
+                </svg>
               </button>
             </div>
             <div id="completedContractsContent" class="section-content table-scroll">
               <table aria-describedby="completedTableCount">
-                <caption class="sr-only">Contratos encerrados e concluídos</caption>
+                <caption class="sr-only">
+                  Contratos encerrados e concluídos
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col">ID</th>
@@ -426,16 +1091,160 @@
       </section>
     </main>
 
-    <footer class="site-footer">
+    <footer class="site-footer" role="contentinfo">
       <div>
         <strong>Prefeitura Municipal de Iguape</strong>
-        <span>Painel público estático para acompanhamento e transparência dos contratos municipais.</span>
+        <span
+          >Painel público estático para acompanhamento e transparência dos contratos
+          municipais.</span
+        >
       </div>
       <span>Publicado via GitHub Pages · Dados locais da planilha oficial</span>
     </footer>
 
-    <button id="backToTopBtn" class="floating-top-button" type="button" aria-label="Voltar ao topo" hidden>
-      <i aria-hidden="true" data-lucide="arrow-up"></i>
+    <button
+      id="backToTopBtn"
+      class="floating-top-button"
+      type="button"
+      aria-label="Voltar ao topo"
+      hidden
+    >
+      <svg class="icon" aria-hidden="true" focusable="false">
+        <use href="assets/icons/sprite.svg#arrow-up"></use>
+      </svg>
     </button>
+
+    <dialog id="contractDialog" class="contract-dialog" aria-labelledby="contractDialogTitle">
+      <div class="dialog-shell">
+        <header class="dialog-header">
+          <div>
+            <span id="contractDialogEyebrow" class="dialog-eyebrow">Detalhe do contrato</span>
+            <h2 id="contractDialogTitle">Contrato</h2>
+          </div>
+          <button
+            id="contractDialogCloseBtn"
+            class="icon-button"
+            type="button"
+            aria-label="Fechar detalhe do contrato"
+          >
+            <svg class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/icons/sprite.svg#x"></use>
+            </svg>
+          </button>
+        </header>
+        <div id="contractDialogBody" class="contract-dialog-body"></div>
+        <footer class="dialog-actions" role="group" aria-label="Ações do contrato">
+          <button id="copyContractBtn" class="ghost-button" type="button">
+            <svg class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/icons/sprite.svg#copy"></use>
+            </svg>
+            <span>Copiar dados</span>
+          </button>
+          <button id="printContractBtn" class="ghost-button" type="button">
+            <svg class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/icons/sprite.svg#printer"></use>
+            </svg>
+            <span>Imprimir este contrato</span>
+          </button>
+          <button id="shareContractBtn" class="ghost-button" type="button">
+            <svg class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/icons/sprite.svg#copy"></use>
+            </svg>
+            <span>Compartilhar link</span>
+          </button>
+        </footer>
+      </div>
+    </dialog>
+
+    <dialog id="shortcutsDialog" class="shortcuts-dialog" aria-labelledby="shortcutsDialogTitle">
+      <div class="dialog-shell">
+        <header class="dialog-header">
+          <div>
+            <span class="dialog-eyebrow">Ajuda rápida</span>
+            <h2 id="shortcutsDialogTitle">Atalhos e busca avançada</h2>
+          </div>
+          <button
+            id="shortcutsDialogCloseBtn"
+            class="icon-button"
+            type="button"
+            aria-label="Fechar ajuda de atalhos"
+          >
+            <svg class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/icons/sprite.svg#x"></use>
+            </svg>
+          </button>
+        </header>
+        <div class="shortcuts-grid">
+          <article>
+            <h3>Atalhos</h3>
+            <dl>
+              <dt>/</dt>
+              <dd>Focar busca.</dd>
+              <dt>Esc</dt>
+              <dd>Limpar busca ou filtros ativos.</dd>
+              <dt>g a</dt>
+              <dd>Aplicar recorte de ativos.</dd>
+              <dt>g v</dt>
+              <dd>Aplicar recorte de vencidos.</dd>
+              <dt>g 3</dt>
+              <dd>Aplicar recorte de 30 dias.</dd>
+              <dt>j / k</dt>
+              <dd>Navegar entre contratos visíveis.</dd>
+              <dt>?</dt>
+              <dd>Abrir esta ajuda.</dd>
+            </dl>
+          </article>
+          <article>
+            <h3>Busca avançada</h3>
+            <ul>
+              <li><code>empresa:"texto"</code></li>
+              <li><code>status:vencido</code></li>
+              <li><code>modalidade:pregão</code></li>
+              <li><code>valor:&gt;50000</code> ou <code>valor:&lt;=1000</code></li>
+              <li><code>vencimento:2026-03..2026-06</code></li>
+              <li><code>gestor:"nome"</code> ou <code>fiscal:"nome"</code></li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog
+      id="dataWarningsDialog"
+      class="shortcuts-dialog data-warnings-dialog"
+      aria-labelledby="dataWarningsDialogTitle"
+    >
+      <div class="dialog-shell">
+        <header class="dialog-header">
+          <div>
+            <span class="dialog-eyebrow">Validação de dados</span>
+            <h2 id="dataWarningsDialogTitle">Avisos encontrados em data/contratos.js</h2>
+          </div>
+          <button
+            id="dataWarningsCloseBtn"
+            class="icon-button"
+            type="button"
+            aria-label="Fechar avisos de dados"
+          >
+            <svg class="icon" aria-hidden="true" focusable="false">
+              <use href="assets/icons/sprite.svg#x"></use>
+            </svg>
+          </button>
+        </header>
+        <div class="data-warnings-body">
+          <p>
+            O painel continua funcionando com os registros interpretáveis. Revise os itens abaixo na
+            próxima atualização da planilha.
+          </p>
+          <ul id="dataWarningsList"></ul>
+          <a
+            id="dataWarningsMailto"
+            class="ghost-button"
+            href="mailto:transparencia@iguape.sp.gov.br?subject=Corre%C3%A7%C3%A3o%20de%20dados%20do%20painel"
+            >Reportar correção</a
+          >
+        </div>
+      </div>
+    </dialog>
   </body>
 </html>

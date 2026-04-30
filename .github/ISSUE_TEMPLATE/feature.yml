@@ -1,0 +1,32 @@
+name: Solicitar melhoria
+description: Proponha uma melhoria para gestores, transparência pública ou manutenção.
+title: 'feat: '
+labels: ['melhoria']
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: Qual necessidade a melhoria atende?
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Proposta
+      description: Descreva a solução desejada.
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceite
+      placeholder: 'Liste como validar que a melhoria ficou pronta.'
+  - type: dropdown
+    id: impacto
+    attributes:
+      label: Impacto esperado
+      options:
+        - Baixo
+        - Médio
+        - Alto
