@@ -150,6 +150,7 @@
   text-align: left;
   transition:
     border-color 160ms ease,
+    background-color 160ms ease,
     box-shadow 160ms ease;
   width: 100%;
 }
@@ -164,6 +165,7 @@
 
 .kpi-card:hover,
 .insight-card:hover {
+  background: var(--color-brand-soft);
   border-color: var(--line-strong);
   box-shadow: var(--shadow);
 }

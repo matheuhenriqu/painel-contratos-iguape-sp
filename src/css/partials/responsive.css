@@ -165,8 +165,8 @@
   }
 
   .app-shell {
-    gap: 14px;
-    padding: 16px 14px 34px;
+    gap: 16px;
+    padding: 16px clamp(14px, 4vw, 22px) 36px;
   }
 
   .filters {
@@ -175,16 +175,29 @@
   }
 
   .filter-header {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
     margin-bottom: 0;
   }
 
   .filter-title-button {
+    justify-content: flex-start;
     min-height: 44px;
     padding: 0 2px;
+    width: 100%;
+  }
+
+  #filterToggleLabel {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .filter-chevron {
     display: block;
+    margin-left: auto;
   }
 
   .filter-body {
@@ -310,7 +323,7 @@
 
   .kpi-grid {
     gap: 12px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   }
 
   .insight-grid {
@@ -318,9 +331,9 @@
   }
 
   .kpi-card {
-    grid-template-columns: 1fr;
-    min-height: 136px;
-    padding: 14px;
+    grid-template-columns: 42px minmax(0, 1fr);
+    min-height: 112px;
+    padding: 14px 14px 14px 16px;
   }
 
   .kpi-icon {
@@ -534,6 +547,8 @@
 
   .topbar-actions {
     align-items: stretch;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
   }
 
   .updated-label {
@@ -556,7 +571,7 @@
 
   .action-toolbar {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .quality-grid {
@@ -604,8 +619,17 @@
     min-width: 42px;
   }
 
+  .summary-panel .ghost-button,
+  .action-toolbar .ghost-button {
+    width: 100%;
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
   .kpi-card strong {
-    font-size: 1.55rem;
+    font-size: clamp(1.5rem, 8vw, 1.85rem);
   }
 
   .chart-frame {
@@ -647,12 +671,16 @@
     font-size: 0.95rem;
   }
 
-  .kpi-grid {
-    grid-template-columns: 1fr;
+  #clearFiltersBtn {
+    padding: 0;
+    width: 44px;
+  }
+
+  #clearFiltersBtn span {
+    display: none;
   }
 
   .kpi-card {
-    grid-template-columns: 42px minmax(0, 1fr);
     min-height: 96px;
   }
 
