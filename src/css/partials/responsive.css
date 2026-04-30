@@ -174,7 +174,7 @@
   .updated-label {
     font-size: 0.78rem;
     line-height: 1.2;
-    min-height: 32px;
+    min-height: 44px;
     padding: 6px 10px;
   }
 
@@ -204,9 +204,9 @@
 
   #filterToggleLabel {
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
 
   .filter-chevron {
@@ -265,8 +265,8 @@
   }
 
   .input-clear-button {
-    height: 34px;
-    width: 34px;
+    height: 44px;
+    width: 44px;
   }
 
   .insight-card {
@@ -491,6 +491,7 @@
     font-size: 0.86rem;
     gap: 10px;
     grid-template-columns: minmax(82px, 31%) minmax(0, 1fr);
+    overflow-wrap: anywhere;
     padding: 10px 12px;
   }
 
@@ -537,6 +538,7 @@
   .status-cell .status-badge,
   .status-cell small {
     grid-column: 2;
+    min-width: 0;
   }
 
   .empty-state {
@@ -690,6 +692,12 @@
 
   .kpi-card {
     min-height: 96px;
+  }
+
+  .quick-filter-group,
+  .action-toolbar,
+  .contract-card-facts {
+    grid-template-columns: 1fr;
   }
 
   .updated-label {

@@ -20,11 +20,15 @@
 }
 
 .skip-link {
+  align-items: center;
   background: var(--color-primary);
   border-radius: 8px;
   box-shadow: var(--shadow);
   color: var(--color-brand-contrast);
+  display: inline-flex;
   left: 16px;
+  line-height: 1.25;
+  min-height: 44px;
   padding: 10px 12px;
   position: fixed;
   top: 12px;

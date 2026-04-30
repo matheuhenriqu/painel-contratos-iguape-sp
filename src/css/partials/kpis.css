@@ -3,13 +3,13 @@
 .kpi-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
 }
 
 .insight-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
 }
 
 .insight-card {
@@ -21,7 +21,7 @@
   gap: 12px;
   grid-template-columns: 38px minmax(0, 1fr);
   min-height: 102px;
-  overflow: hidden;
+  overflow: visible;
   padding: 14px;
   position: relative;
   transition:
@@ -98,19 +98,18 @@
   font-size: 1.12rem;
   line-height: 1.15;
   margin-top: 5px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .insight-card small {
   color: var(--muted);
   display: block;
   font-size: 0.78rem;
+  line-height: 1.35;
   margin-top: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .kpi-card,
@@ -144,7 +143,7 @@
   gap: 12px;
   grid-template-columns: 44px minmax(0, 1fr);
   min-height: 108px;
-  overflow: hidden;
+  overflow: visible;
   padding: 16px;
   position: relative;
   text-align: left;
@@ -205,23 +204,27 @@
   display: block;
   font-size: 0.78rem;
   font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 
 .kpi-card strong {
   display: block;
   font-size: clamp(1.45rem, 1vw + 0.92rem, 1.95rem);
-  line-height: 1.1;
+  line-height: 1.16;
   margin-top: 6px;
-  overflow-wrap: normal;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .kpi-card small {
   color: var(--muted);
   display: block;
   font-size: 0.78rem;
+  line-height: 1.35;
   margin-top: 6px;
+  overflow-wrap: anywhere;
 }
 
 .kpi-sparkline {
@@ -246,7 +249,7 @@
 .quality-grid {
   display: grid;
   gap: 10px;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
 }
 
 .quality-card {
@@ -287,8 +290,9 @@
 .quality-card strong {
   display: block;
   font-size: 1.32rem;
-  line-height: 1.1;
+  line-height: 1.18;
   margin-top: 4px;
+  overflow-wrap: anywhere;
 }
 
 .quality-card small {

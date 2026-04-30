@@ -15,7 +15,7 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--ink);
-  min-height: 40px;
+  min-height: 44px;
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
@@ -97,7 +97,7 @@
   color: var(--ink);
   font-size: 0.82rem;
   font-weight: 750;
-  min-height: 34px;
+  min-height: 44px;
   padding: 0 34px 0 10px;
   text-transform: none;
 }

@@ -39,7 +39,8 @@
   font-size: 0.98rem;
   font-weight: 850;
   gap: 8px;
-  min-height: 34px;
+  line-height: 1.2;
+  min-height: 44px;
   min-width: 0;
   padding: 0;
 }
@@ -85,7 +86,10 @@
   font-weight: 800;
   gap: 7px;
   justify-content: center;
-  min-height: 34px;
+  line-height: 1.2;
+  min-height: 44px;
+  padding: 7px 10px;
+  text-align: center;
   transition:
     border-color 160ms ease,
     background-color 160ms ease,
@@ -157,16 +161,15 @@
   color: var(--green);
   font-size: 0.76rem;
   font-weight: 800;
-  min-height: 34px;
+  min-height: 44px;
   padding: 4px 8px;
 }
 
 .saved-filter-item > button {
   justify-content: flex-start;
-  overflow: hidden;
+  overflow: visible;
   text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .saved-filter-item > div {
@@ -189,8 +192,12 @@
   font-size: 0.78rem;
   font-weight: 800;
   justify-content: center;
+  line-height: 1.2;
+  max-width: 100%;
   min-height: 26px;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
 }
 
 .sort-dir-button:hover,
@@ -237,6 +244,7 @@
 
 .filter-chip span {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
