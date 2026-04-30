@@ -15,7 +15,7 @@ O painel é uma aplicação estática para consulta pública e apoio à gestão 
 - Nomear landmarks e seções com `aria-labelledby`, preservando o skip-link e adicionando navegação principal acessível sob foco.
 - Reforçar diálogos com trap de foco e restauração do foco para o elemento acionador.
 - Exibir badges de status com ícone e texto, garantindo que cor não seja a única pista.
-- Manter o tema de alto contraste com pares fortes de preto, branco e amarelo e bordas reforçadas.
+- Manter o modo claro institucional com contraste mínimo AA e foco visível.
 - Gerar QR code no cliente com biblioteca local em `assets/vendor/qrcode.min.js`, desenhando SVG por DOM para continuar compatível com CSP estrita.
 - Forçar a impressão em paleta clara, com cabeçalho institucional, filtros aplicados, URL canônica, QR code e regras de quebra de página.
 - Adicionar `scripts/axe-audit.mjs` para auditoria local com axe-core servido junto do repositório.

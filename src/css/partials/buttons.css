@@ -5,7 +5,7 @@
 .row-detail-button,
 .contract-card-action {
   align-items: center;
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   color: var(--color-brand-strong);
@@ -41,7 +41,7 @@
 
 .ghost-button {
   align-items: center;
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: 0 1px 0 rgba(18, 62, 86, 0.04);
@@ -90,7 +90,7 @@
 .section-toggle-button,
 .floating-top-button {
   align-items: center;
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   color: var(--color-brand-strong);
@@ -108,9 +108,9 @@
 }
 
 .density-button.is-active {
-  background: var(--green);
-  border-color: var(--green);
-  color: #fff;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-brand-contrast);
 }
 
 .sort-dir-button.is-desc svg {
@@ -133,12 +133,12 @@
 
 .floating-top-button {
   animation: rise-in 220ms ease both;
-  background: var(--green);
+  background: var(--color-primary);
   border-color: transparent;
   border-radius: 999px;
   bottom: clamp(14px, 2vw, 28px);
-  box-shadow: 0 10px 24px rgba(16, 56, 78, 0.18);
-  color: #fff;
+  box-shadow: var(--shadow-lg);
+  color: var(--color-brand-contrast);
   height: 44px;
   min-height: 44px;
   padding: 0;

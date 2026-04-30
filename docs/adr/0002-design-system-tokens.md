@@ -1,31 +1,40 @@
-# ADR 0002: Design system com tokens e temas
+# ADR 0002: Design system com tokens e modo claro institucional
 
 ## Status
 
-Aceito.
+Aceito. Revisado em 30/04/2026 para manter somente modo claro.
 
 ## Contexto
 
-O CSS original concentrava identidade visual, responsividade e estados de componentes em uma folha única. A Etapa 2 exige tema claro, escuro e alto contraste, persistência local e respeito à preferência do sistema, sem build, sem CDN e sem enfraquecer a Content Security Policy.
+O painel deve refletir a identidade visual do portal oficial da Prefeitura de Iguape
+e continuar publicável diretamente pelo GitHub Pages, sem CDN, backend ou etapa de
+build obrigatória. A prioridade atual é consistência institucional, contraste AA e
+manutenção simples.
 
 ## Decisão
 
-Adotar CSS Custom Properties em `src/css/tokens.css` para tipografia, espaçamento, raios, sombras, durações, paleta institucional e tokens semânticos. Os temas ficam em `src/css/themes.css`, com `data-theme="light"`, `data-theme="dark"`, `data-theme="hc"` e modo automático sem `data-theme`, controlado por `prefers-color-scheme`.
+Adotar CSS Custom Properties em `src/css/tokens.css` para tipografia, espaçamento,
+raios, sombras, durações, paleta oficial e tokens semânticos. As cores base foram
+extraídas dos CSS públicos de `https://www.iguape.sp.gov.br` em 30/04/2026.
 
-O CSS foi dividido em partials por componente e importado por `src/css/main.css`. Como o GitHub Pages serve CSS estático normalmente, os `@import` mantêm compatibilidade sem pré-processador.
+O projeto passa a operar somente em modo claro. Foram removidos alternância de tema,
+`data-theme`, `prefers-color-scheme`, persistência em `localStorage` e bootstrap de
+tema no `<head>`.
 
-O bootstrap inicial do tema usa `src/js/theme-bootstrap.js` no `<head>` antes da folha CSS. Essa escolha evita script inline, mantém `script-src 'self'` e elimina o flash branco quando há tema persistido.
+O CSS continua dividido em partials por componente e importado por `src/css/main.css`.
+Como o GitHub Pages serve CSS estático normalmente, os `@import` mantêm compatibilidade
+sem pré-processador.
 
 ## Consequências
 
-- A UI passa a ter quatro modos operacionais: automático, claro, escuro e alto contraste.
-- O tema salvo usa a chave `painel.theme` em `localStorage`.
-- Gráficos leem tokens computados e são repintados no evento `theme:changed`.
-- A impressão força tokens claros para preservar legibilidade em papel.
-- O CSS passa a ter mais arquivos, mas continua sem build e fácil de auditar por componente.
+- A UI fica alinhada ao azul institucional `#0f65a2` e ao acento laranja `#f56600`.
+- A CSP permanece restritiva, sem script inline novo.
+- A superfície visual fica mais previsível para manutenção e impressão.
+- Gráficos continuam lendo tokens computados, agora sem necessidade de repintura por troca de tema.
+- A remoção do modo escuro reduz JavaScript, CSS e estados visuais a testar.
 
-## Alternativas consideradas
+## Alternativas Consideradas
 
-- Script inline no `<head>`: reduziria uma requisição, mas exigiria relaxar `script-src` com `unsafe-inline`, o que foi evitado.
-- Classe no `body`: funcionaria após o carregamento, mas chegaria tarde para evitar flash antes do primeiro paint.
-- Variáveis apenas em `:root`: simplificaria o CSS, mas não atenderia alto contraste nem preferência do sistema.
+- Manter temas múltiplos: rejeitado para atender ao requisito atual de modo claro único.
+- Script inline no `<head>`: rejeitado por exigir relaxamento desnecessário da CSP.
+- Paleta inventada para o painel: rejeitada porque o objetivo é aderência ao portal oficial.

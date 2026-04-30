@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2.0.0-2026-04-30';
+const CACHE_VERSION = 'v2.0.1-2026-04-30';
 const APP_CACHE = `contratos-iguape-app-${CACHE_VERSION}`;
 const DATA_CACHE = `contratos-iguape-data-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `contratos-iguape-runtime-${CACHE_VERSION}`;
@@ -26,7 +26,6 @@ const APP_SHELL = [
   'src/css/partials/footer.css',
   'src/css/partials/responsive.css',
   'src/css/partials/print.css',
-  'src/js/theme-bootstrap.js',
   'src/js/offline.js',
   'src/js/main.js',
   'src/js/constants.js',
@@ -59,7 +58,6 @@ const APP_SHELL = [
   'src/js/ui/share.js',
   'src/js/ui/summary.js',
   'src/js/ui/table.js',
-  'src/js/ui/theme.js',
   'src/js/ui/urgency.js',
   'src/js/workers/dataset.worker.js',
   'src/js/utils/clipboard.js',

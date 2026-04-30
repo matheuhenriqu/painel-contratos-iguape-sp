@@ -1,96 +1,100 @@
 # Design System
 
-O painel usa CSS Custom Properties servidas estaticamente em `src/css/`. `main.css` importa tokens, partials por componente, temas e regras de impressão.
+O painel usa CSS Custom Properties servidas estaticamente em `src/css/`. O arquivo
+`main.css` importa tokens, partials por componente, regras de tema claro e impressao.
 
 ## Estrutura
 
-- `src/css/tokens.css`: escala base de cores, tipografia, espaçamentos, raios, sombras, durações e aliases semânticos.
-- `src/css/themes.css`: temas `light`, `dark`, `hc` e preferência automática por `prefers-color-scheme`.
-- `src/css/partials/`: estilos por componente: base, layout, topbar, filtros, KPIs, painéis, gráficos, tabelas, badges, botões, formulários, rodapé, responsivo e impressão.
+- `src/css/tokens.css`: cores oficiais, tipografia, espacamentos, raios, sombras, duracoes e aliases semanticos.
+- `src/css/themes.css`: aplicacao dos tokens no tema claro unico.
+- `src/css/partials/`: estilos por componente: base, layout, topbar, filtros, KPIs, paineis, graficos, tabelas, badges, botoes, formularios, rodape, responsivo e impressao.
 
-## Temas
+## Paleta Oficial
 
-- `auto`: remove `data-theme` do `<html>` e respeita `prefers-color-scheme`.
-- `light`: aplica `data-theme="light"`.
-- `dark`: aplica `data-theme="dark"`.
-- `hc`: aplica `data-theme="hc"` com preto, branco, amarelo, bordas reforçadas e links sublinhados.
+As cores foram extraidas dos CSS publicos de `https://www.iguape.sp.gov.br` em 30/04/2026.
 
-O tema é persistido em `localStorage` com a chave `painel.theme`. O script `src/js/theme-bootstrap.js` roda no `<head>` antes do CSS para evitar flash de tema.
+| Uso              | Token                       | Hex       |
+| ---------------- | --------------------------- | --------- |
+| Primaria         | `--color-primary`           | `#0f65a2` |
+| Secundaria       | `--color-secondary`         | `#1169b9` |
+| Apoio azul       | `--color-official-blue-600` | `#527ed3` |
+| Acento           | `--color-accent`            | `#f56600` |
+| Destaque         | `--color-highlight`         | `#fbbd0a` |
+| Sucesso          | `--color-success`           | `#3d6d92` |
+| Perigo           | `--color-danger`            | `#c41726` |
+| Fundo            | `--color-bg`                | `#f5f6f8` |
+| Superficie       | `--color-surface`           | `#ffffff` |
+| Texto            | `--color-text`              | `#333333` |
+| Texto secundario | `--color-muted`             | `#444444` |
+| Borda            | `--color-border`            | `#e1e3e5` |
+
+## Tema
+
+O projeto trabalha somente em modo claro. Nao ha `data-theme`, alternancia de tema,
+`prefers-color-scheme` ou persistencia em `localStorage` para tema. Essa decisao reduz
+complexidade visual e aproxima o painel da identidade atual do portal institucional.
+
+## Icones
+
+A biblioteca padrao e Lucide, vendorizada localmente como sprite em
+`assets/icons/sprite.svg`. A escolha mantem o site 100% estatico, sem CDN, com icones
+outline consistentes, leves e controlados por CSS.
+
+Regras:
+
+- Todos os icones usam `<svg class="icon" aria-hidden="true" focusable="false">`.
+- O sprite define `fill="none"`, `stroke="currentColor"`, `stroke-width="2"`,
+  `stroke-linecap="round"` e `stroke-linejoin="round"`.
+- Botoes com icone e texto usam `gap` e `align-items: center`.
+- Icones decorativos ficam com `aria-hidden="true"`; a acao acessivel fica no texto ou no `aria-label`.
 
 ## Tokens
 
 ### Tipografia
 
-`--font-family-sans`, `--font-size-xs`, `--font-size-sm`, `--font-size-md`, `--font-size-lg`, `--font-size-xl`, `--font-size-2xl`, `--font-size-3xl`, `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold`.
+`--font-family-sans`, `--font-size-xs`, `--font-size-sm`, `--font-size-md`,
+`--font-size-lg`, `--font-size-xl`, `--font-size-2xl`, `--font-size-3xl`,
+`--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold`.
 
-### Espaçamento
+### Espacamento
 
-`--space-0`, `--space-1`, `--space-2`, `--space-3`, `--space-4`, `--space-5`, `--space-6`, `--space-7`, `--space-8`, `--space-10`, `--space-12`.
+Escala baseada em 4px: `--space-0`, `--space-1`, `--space-2`, `--space-3`,
+`--space-4`, `--space-5`, `--space-6`, `--space-7`, `--space-8`,
+`--space-10`, `--space-12`.
 
-### Raios, sombras e movimento
+### Semanticos
 
-`--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-full`, `--shadow-sm`, `--shadow-md`, `--shadow-lg`, `--duration-fast`, `--duration-normal`, `--duration-slow`.
+`--color-bg`, `--color-bg-canvas`, `--color-surface`, `--color-surface-muted`,
+`--color-surface-accent`, `--color-text`, `--color-muted`, `--color-text-muted`,
+`--color-text-strong`, `--color-border`, `--color-border-strong`,
+`--color-brand`, `--color-brand-strong`, `--color-brand-contrast`,
+`--color-success`, `--color-warning`, `--color-danger`, `--color-info`,
+`--color-focus-ring`, `--color-focus-ring-soft`, `--color-link`.
 
-### Paleta base
+## Responsividade
 
-`--color-iguape-green-900`, `--color-iguape-green-800`, `--color-iguape-green-700`, `--color-iguape-green-500`, `--color-iguape-teal-700`, `--color-neutral-0`, `--color-neutral-50`, `--color-neutral-100`, `--color-neutral-200`, `--color-neutral-300`, `--color-neutral-500`, `--color-neutral-800`, `--color-neutral-950`, `--color-gold-600`, `--color-red-700`, `--color-blue-700`, `--color-plum-700`.
+Breakpoints usados:
 
-### Semânticos
-
-`--color-bg`, `--color-bg-canvas`, `--color-surface`, `--color-surface-muted`, `--color-surface-accent`, `--color-text`, `--color-text-muted`, `--color-text-strong`, `--color-border`, `--color-border-strong`, `--color-brand`, `--color-brand-strong`, `--color-brand-contrast`, `--color-success`, `--color-warning`, `--color-danger`, `--color-info`, `--color-plum`, `--color-focus-ring`, `--color-focus-ring-soft`, `--color-link`, `--color-on-solid`.
-
-### Superfícies de componente
-
-`--color-topbar-text`, `--color-topbar-muted`, `--color-topbar-border`, `--color-topbar-bg`, `--color-logo-frame-bg`, `--color-logo-frame-border`, `--color-brand-soft`, `--color-success-soft`, `--color-warning-soft`, `--color-warning-border`, `--color-danger-soft`, `--color-info-soft`, `--color-neutral-soft`, `--color-table-head-bg`, `--color-table-row-hover`, `--color-page-background`.
-
-### Aliases legados
-
-`--bg`, `--surface`, `--surface-2`, `--surface-3`, `--ink`, `--muted`, `--line`, `--line-strong`, `--green`, `--teal`, `--amber`, `--red`, `--plum`, `--blue`, `--navy`, `--gold`, `--header`, `--header-2`, `--shadow`, `--shadow-soft`, `--ring`.
+- `1280px`: reorganizacao do shell e tabelas largas.
+- `1024px`: visualizacoes analiticas passam para uma coluna.
+- `768px`: topbar, filtros e controles entram em layout mobile.
+- `640px`: acoes e KPIs usam coluna unica quando necessario.
+- `360px`: ajustes finos para telas estreitas reais.
 
 ## Contraste
 
-Pares mínimos validados por cálculo WCAG AA:
+Pares principais validados por axe-core e Playwright:
 
-- Claro: `--color-text` `#14231f` em `--color-surface` `#ffffff`: 16,28:1.
-- Claro: `--color-text-muted` `#5d6b66` em `--color-surface` `#ffffff`: 5,58:1.
-- Claro: `--color-brand-contrast` `#ffffff` em `--color-brand` `#155f49`: 7,59:1.
-- Escuro: `--color-text` `#e6efe9` em `--color-surface` `#14201d`: 14,26:1.
-- Escuro: `--color-text-muted` `#b4c8bf` em `--color-surface` `#14201d`: 9,53:1.
-- Escuro: `--color-brand-contrast` `#07110e` em `--color-brand` `#2faa83`: 6,57:1.
-- Alto contraste: `#ffffff` em `#000000`: 21,00:1.
-- Alto contraste: `#000000` em `#ffff00`: 19,56:1.
+- `#333333` em `#ffffff`: AA.
+- `#444444` em `#ffffff`: AA.
+- `#ffffff` em `#0f65a2`: AA.
+- `#2f2100` em `#fbbd0a`: AA.
+- `#ffffff` em `#c41726`: AA.
 
-## Regras de uso
+## Regras De Uso
 
-- Use tokens semânticos nos componentes; tokens base ficam para ajustes do próprio design system.
-- Não use cores hex novas em partials sem antes criar ou reaproveitar token.
-- Estados de foco devem usar `--color-focus-ring` com `outline-offset: 2px`.
-- Animações e transições devem usar `--duration-*` e respeitar `prefers-reduced-motion: reduce`.
-- A impressão força tema claro e não depende da preferência salva.
-- A logo institucional permanece em uma moldura clara para manter legibilidade nos temas escuro e alto contraste.
-
-## Sketch dos temas
-
-Ver estes sketches como referência rápida para revisão visual:
-
-- [Tema claro](#tema-claro)
-- [Tema escuro](#tema-escuro)
-- [Alto contraste](#alto-contraste)
-
-### Tema claro
-
-| Superfície               | Texto                       | Ação                         |
-| ------------------------ | --------------------------- | ---------------------------- |
-| `--color-surface` branco | `--color-text` verde escuro | `--color-brand` verde Iguape |
-
-### Tema escuro
-
-| Superfície                          | Texto                      | Ação                           |
-| ----------------------------------- | -------------------------- | ------------------------------ |
-| `--color-surface` verde quase preto | `--color-text` verde claro | `--color-brand` verde luminoso |
-
-### Alto contraste
-
-| Superfície | Texto  | Ação                     |
-| ---------- | ------ | ------------------------ |
-| preto      | branco | amarelo com borda branca |
+- Use tokens semanticos nos componentes; tokens oficiais ficam concentrados em `tokens.css`.
+- Nao use novas cores hex em partials sem antes criar ou reaproveitar token.
+- Estados de foco usam `--color-focus-ring` com `outline-offset: 2px`.
+- Transicoes usam `--duration-*` e respeitam `prefers-reduced-motion: reduce`.
+- Impressao usa paleta neutra clara independente do estado da pagina.

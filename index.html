@@ -12,8 +12,8 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'sha256-IbdZsJ9gczIVKRGjphafydmlV3PDwKYWO48JDLgC3B0='; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; media-src 'none'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'none'"
     />
-    <meta name="theme-color" content="#16664f" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0f65a2" />
+    <meta name="color-scheme" content="light" />
     <meta name="robots" content="index,follow,max-image-preview:large" />
     <meta name="application-name" content="Contratos Iguape" />
     <meta property="og:title" content="Painel de Contratos — Iguape/SP" />
@@ -99,7 +99,6 @@
     <link rel="modulepreload" href="src/js/ui/section-toggles.js" />
     <link rel="modulepreload" href="src/js/ui/summary.js" />
     <link rel="modulepreload" href="src/js/ui/table.js" />
-    <link rel="modulepreload" href="src/js/ui/theme.js" />
     <link rel="modulepreload" href="src/js/ui/contract-details.js" />
     <link rel="modulepreload" href="src/js/ui/data-warnings.js" />
     <link rel="modulepreload" href="src/js/ui/export-data.js" />
@@ -118,7 +117,6 @@
     <link rel="modulepreload" href="src/js/utils/search.js" />
     <link rel="modulepreload" href="src/js/utils/svg.js" />
     <link rel="modulepreload" href="src/js/utils/strings.js" />
-    <script src="src/js/theme-bootstrap.js"></script>
     <link rel="stylesheet" href="src/css/main.css" />
     <script src="data/contratos.js" defer></script>
     <script type="module" src="src/js/main.js"></script>
@@ -219,18 +217,6 @@
         </div>
       </div>
       <div class="topbar-actions">
-        <button
-          id="themeToggleBtn"
-          class="theme-toggle-button"
-          type="button"
-          aria-label="Alternar tema, atual: automático"
-        >
-          <svg id="themeToggleIcon" class="icon" aria-hidden="true" focusable="false">
-            <use href="assets/icons/sprite.svg#sun-moon"></use>
-          </svg>
-          <span id="themeToggleLabel" class="sr-only">Tema automático</span>
-        </button>
-        <span id="themeStatus" class="sr-only"></span>
         <span class="updated-label">
           <svg class="icon" aria-hidden="true" focusable="false">
             <use href="assets/icons/sprite.svg#database"></use>
@@ -489,7 +475,7 @@
               </button>
               <button id="exportXlsxBtn" class="ghost-button" type="button">
                 <svg class="icon" aria-hidden="true" focusable="false">
-                  <use href="assets/icons/sprite.svg#file-down"></use>
+                  <use href="assets/icons/sprite.svg#file-spreadsheet"></use>
                 </svg>
                 <span>Exportar XLSX</span>
               </button>
@@ -501,13 +487,13 @@
               </button>
               <button id="exportJsonBtn" class="ghost-button" type="button">
                 <svg class="icon" aria-hidden="true" focusable="false">
-                  <use href="assets/icons/sprite.svg#file-down"></use>
+                  <use href="assets/icons/sprite.svg#file-json"></use>
                 </svg>
                 <span>Exportar JSON</span>
               </button>
               <button id="shareReportBtn" class="ghost-button" type="button">
                 <svg class="icon" aria-hidden="true" focusable="false">
-                  <use href="assets/icons/sprite.svg#copy"></use>
+                  <use href="assets/icons/sprite.svg#share-2"></use>
                 </svg>
                 <span>Compartilhar</span>
               </button>
@@ -1148,7 +1134,7 @@
           </button>
           <button id="shareContractBtn" class="ghost-button" type="button">
             <svg class="icon" aria-hidden="true" focusable="false">
-              <use href="assets/icons/sprite.svg#copy"></use>
+              <use href="assets/icons/sprite.svg#share-2"></use>
             </svg>
             <span>Compartilhar link</span>
           </button>
