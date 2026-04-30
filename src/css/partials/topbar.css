@@ -71,6 +71,7 @@
   font-weight: 850;
   letter-spacing: 0;
   line-height: 1.1;
+  overflow-wrap: anywhere;
 }
 
 .brand-copy {
@@ -114,12 +115,13 @@
   color: rgba(255, 255, 255, 0.88);
   display: inline-flex;
   gap: 8px;
+  line-height: 1.25;
   max-width: 100%;
-  min-height: 34px;
-  overflow: hidden;
+  min-height: 44px;
+  overflow: visible;
+  overflow-wrap: anywhere;
   padding: 7px 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .updated-label svg {

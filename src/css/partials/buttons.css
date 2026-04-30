@@ -14,19 +14,21 @@
   font-weight: 800;
   gap: 7px;
   justify-content: center;
-  min-height: 34px;
+  line-height: 1.2;
+  min-height: 44px;
   padding: 0 10px;
+  text-align: center;
 }
 
 .icon-button {
-  min-height: 40px;
+  min-height: 44px;
   padding: 0;
-  width: 40px;
+  width: 44px;
 }
 
 .row-detail-button {
-  min-height: 30px;
-  padding: 3px 7px;
+  min-height: 44px;
+  padding: 6px 9px;
 }
 
 .row-detail-button svg,
@@ -49,8 +51,10 @@
   display: inline-flex;
   gap: 8px;
   justify-content: center;
-  min-height: 38px;
-  padding: 8px 10px;
+  line-height: 1.2;
+  min-height: 44px;
+  padding: 9px 12px;
+  text-align: center;
   transition:
     border-color 160ms ease,
     background-color 160ms ease,
@@ -99,8 +103,10 @@
   font-weight: 800;
   gap: 7px;
   justify-content: center;
-  min-height: 34px;
+  line-height: 1.2;
+  min-height: 44px;
   padding: 0 10px;
+  text-align: center;
   transition:
     border-color 160ms ease,
     background-color 160ms ease,
@@ -120,7 +126,7 @@
 .section-toggle-button {
   flex: 0 0 auto;
   padding: 0;
-  width: 36px;
+  width: 44px;
 }
 
 .section-toggle-button svg {

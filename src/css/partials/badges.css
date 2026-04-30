@@ -16,6 +16,7 @@ td.muted,
   font-weight: 850;
   line-height: 1.25;
   max-width: 100%;
+  overflow-wrap: anywhere;
   padding: 2px 6px;
   width: fit-content;
 }
@@ -29,8 +30,10 @@ td.muted,
   line-height: 1.2;
   margin-top: 5px;
   max-width: 100%;
+  overflow-wrap: anywhere;
   padding: 3px 7px;
-  white-space: nowrap;
+  text-align: center;
+  white-space: normal;
   width: fit-content;
 }
 
@@ -71,6 +74,7 @@ td.muted,
   letter-spacing: 0;
   line-height: 1.15;
   max-width: 100%;
+  overflow-wrap: anywhere;
   padding: 4px 6px;
   text-align: center;
   white-space: normal;
